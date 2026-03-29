@@ -15,42 +15,44 @@
         --danger: #ef4444;
         --line: #1f2937;
       }
-
       * { box-sizing: border-box; }
-
       body {
         margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background: linear-gradient(180deg, #020617, var(--bg));
         color: var(--text);
       }
+      .container { max-width: 1080px; margin: 0 auto; padding: 24px; }
+      h1 { margin: 0 0 8px; font-size: 1.7rem; }
+      .desc { color: var(--muted); margin: 0 0 16px; }
 
-      .container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 24px;
+      .menu {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .tab-btn {
+        border: 1px solid #334155;
+        background: #0b1220;
+        color: #cbd5e1;
+        border-radius: 999px;
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .tab-btn.active {
+        background: #14532d;
+        color: #dcfce7;
+        border-color: #15803d;
       }
 
-      .title {
-        margin-bottom: 18px;
-      }
+      .tab-panel { display: none; }
+      .tab-panel.active { display: block; }
 
-      h1 {
-        margin: 0 0 8px;
-        font-size: 1.7rem;
-      }
-
-      .desc {
-        color: var(--muted);
-        margin: 0;
-      }
-
-      .layout {
+      .grid {
         display: grid;
-        grid-template-columns: 340px 1fr;
-        gap: 16px;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
       }
-
       .card {
         background: rgba(17, 24, 39, 0.8);
         border: 1px solid var(--line);
@@ -58,14 +60,7 @@
         padding: 16px;
       }
 
-      label {
-        display: block;
-        margin-top: 10px;
-        margin-bottom: 6px;
-        font-size: 0.9rem;
-        color: #cbd5e1;
-      }
-
+      label { display: block; margin: 10px 0 6px; color: #cbd5e1; font-size: 0.9rem; }
       input, select, textarea, button {
         width: 100%;
         border-radius: 10px;
@@ -75,16 +70,48 @@
         padding: 10px;
         font: inherit;
       }
-
-      textarea { min-height: 80px; resize: vertical; }
-
-      button {
+      textarea { min-height: 70px; resize: vertical; }
+      button.primary {
         margin-top: 14px;
-        cursor: pointer;
         border: none;
         background: var(--primary);
         color: #052e16;
         font-weight: 700;
+        cursor: pointer;
+      }
+
+      .inline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+      .inline button {
+        width: auto;
+        padding: 10px 12px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        cursor: pointer;
+      }
+
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #0b1220;
+        border: 1px solid #334155;
+        padding: 5px 8px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+      }
+      .chip button {
+        width: auto;
+        margin: 0;
+        border: none;
+        background: #7f1d1d;
+        color: #fee2e2;
+        border-radius: 999px;
+        padding: 2px 8px;
       }
 
       .summary {
@@ -93,111 +120,102 @@
         gap: 10px;
         margin-bottom: 12px;
       }
-
       .pill {
         border: 1px solid var(--line);
         border-radius: 10px;
         padding: 10px;
         background: #0b1220;
       }
+      .pill strong { display: block; margin-top: 4px; font-size: 1.3rem; }
 
-      .pill strong { display: block; font-size: 1.3rem; margin-top: 4px; }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.93rem;
-      }
-
-      th, td {
-        padding: 10px 8px;
-        border-bottom: 1px solid var(--line);
-        vertical-align: top;
-      }
-
-      th { color: #cbd5e1; text-align: left; }
-
-      .type {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 999px;
-        font-size: 0.78rem;
-        border: 1px solid #334155;
-      }
-
-      .actions {
-        display: flex;
-        gap: 6px;
-      }
-
-      .ghost {
-        background: #1e293b;
-        color: #e2e8f0;
-        padding: 6px 8px;
-        margin: 0;
-      }
-
-      .danger {
-        background: #7f1d1d;
-      }
+      table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+      th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { text-align: left; color: #cbd5e1; }
+      .type { padding: 2px 8px; border-radius: 999px; border: 1px solid #334155; font-size: 0.8rem; }
 
       .status-ok { color: var(--primary); }
       .status-warn { color: var(--warn); }
       .status-danger { color: var(--danger); }
 
-      .empty {
-        color: var(--muted);
-        text-align: center;
-        padding: 30px 0;
+      .ghost {
+        background: #1e293b;
+        color: #e2e8f0;
+        border: none;
+        border-radius: 8px;
+        padding: 6px 10px;
+        cursor: pointer;
       }
+      .ghost.danger { background: #7f1d1d; }
+
+      .empty { color: var(--muted); text-align: center; padding: 26px 0; }
 
       @media (max-width: 900px) {
-        .layout { grid-template-columns: 1fr; }
+        .grid { grid-template-columns: 1fr; }
+        .summary { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <header class="title">
-        <h1>체험단 승인 일정 관리</h1>
-        <p class="desc">나 혼자 사용하는 체험단 관리 페이지입니다. 승인된 체험단의 체험기간/리뷰 마감기한을 기록하고 마감 임박 항목을 확인하세요.</p>
-      </header>
+      <h1>체험단 승인 일정 관리</h1>
+      <p class="desc">혼자 사용하는 체험단 관리 도구입니다. 등록 메뉴와 목록 메뉴를 분리해 관리할 수 있습니다.</p>
 
-      <section class="layout">
-        <article class="card">
-          <h2>승인된 체험단 추가</h2>
-          <form id="entry-form">
-            <label for="campaignName">체험단 이름</label>
-            <input id="campaignName" name="campaignName" placeholder="예: 강남 파스타 방문형" required />
+      <nav class="menu">
+        <button class="tab-btn active" data-tab="register" type="button">체험단 등록 메뉴</button>
+        <button class="tab-btn" data-tab="list" type="button">체험단 목록 메뉴</button>
+      </nav>
 
-            <label for="siteName">체험단 사이트</label>
-            <input id="siteName" name="siteName" placeholder="예: 레뷰, 링블" required />
+      <section id="tab-register" class="tab-panel active">
+        <div class="grid">
+          <article class="card">
+            <h2>승인된 체험단 등록</h2>
+            <form id="entry-form">
+              <label for="campaignName">체험단 이름</label>
+              <input id="campaignName" name="campaignName" placeholder="예: 강남 파스타 체험" required />
 
-            <label for="type">체험단 유형</label>
-            <select id="type" name="type" required>
-              <option value="방문형">방문형</option>
-              <option value="배송형">배송형</option>
-              <option value="구매형">구매형</option>
-            </select>
+              <label for="siteName">체험단 사이트</label>
+              <select id="siteName" name="siteName" required></select>
 
-            <label for="experienceDeadline">체험기간 마감일</label>
-            <input id="experienceDeadline" name="experienceDeadline" type="date" required />
+              <label for="type">체험단 유형</label>
+              <select id="type" name="type" required></select>
 
-            <label for="reviewDeadline">리뷰 마감기한</label>
-            <input id="reviewDeadline" name="reviewDeadline" type="date" required />
+              <label for="experienceDeadline">방문마감일</label>
+              <input id="experienceDeadline" name="experienceDeadline" type="date" required />
 
-            <label for="memo">메모</label>
-            <textarea id="memo" name="memo" placeholder="방문 시간, 영수증 조건 등"></textarea>
+              <label for="reviewDeadline">리뷰 마감기한</label>
+              <input id="reviewDeadline" name="reviewDeadline" type="date" required />
 
-            <button type="submit">목록에 추가</button>
-          </form>
-        </article>
+              <label for="memo">메모</label>
+              <textarea id="memo" name="memo" placeholder="방문시간, 조건, 링크 등"></textarea>
 
+              <button class="primary" type="submit">등록하기</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <h2>체험단 사이트 관리</h2>
+            <div class="inline">
+              <input id="siteInput" placeholder="새 사이트명 입력" />
+              <button id="addSiteBtn" type="button">추가</button>
+            </div>
+            <div id="siteChips" class="chips"></div>
+
+            <h2 style="margin-top:20px;">체험단 유형 관리</h2>
+            <div class="inline">
+              <input id="typeInput" placeholder="새 유형명 입력" />
+              <button id="addTypeBtn" type="button">추가</button>
+            </div>
+            <div id="typeChips" class="chips"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-list" class="tab-panel">
         <article class="card">
           <div class="summary">
             <div class="pill">총 승인 건수<strong id="totalCount">0</strong></div>
-            <div class="pill">체험 마감 임박(3일)<strong id="expiringCount">0</strong></div>
-            <div class="pill">리뷰 마감 임박(3일)<strong id="reviewDueCount">0</strong></div>
+            <div class="pill">방문마감 임박(3일)<strong id="expiringCount">0</strong></div>
+            <div class="pill">리뷰마감 임박(3일)<strong id="reviewDueCount">0</strong></div>
           </div>
 
           <div style="overflow-x:auto;">
@@ -205,9 +223,10 @@
               <thead>
                 <tr>
                   <th>체험단</th>
+                  <th>사이트</th>
                   <th>유형</th>
-                  <th>체험 마감</th>
-                  <th>리뷰 마감</th>
+                  <th>방문마감일</th>
+                  <th>리뷰 마감기한</th>
                   <th>상태</th>
                   <th>관리</th>
                 </tr>
@@ -215,13 +234,19 @@
               <tbody id="list-body"></tbody>
             </table>
           </div>
-          <p id="empty" class="empty">아직 등록된 승인 체험단이 없습니다.</p>
+          <p id="empty" class="empty">아직 등록된 체험단이 없습니다.</p>
         </article>
       </section>
     </div>
 
     <script>
-      const STORAGE_KEY = 'vibe-coding-campaigns-v1';
+      const STORAGE_KEY_ITEMS = 'vibe-coding-campaigns-v2';
+      const STORAGE_KEY_SITES = 'vibe-coding-sites-v1';
+      const STORAGE_KEY_TYPES = 'vibe-coding-types-v1';
+
+      const defaultSites = ['레뷰', '링블', '강남맛집체험단'];
+      const defaultTypes = ['방문형', '배송형', '구매형'];
+
       const form = document.getElementById('entry-form');
       const listBody = document.getElementById('list-body');
       const emptyEl = document.getElementById('empty');
@@ -229,22 +254,64 @@
       const expiringCount = document.getElementById('expiringCount');
       const reviewDueCount = document.getElementById('reviewDueCount');
 
-      const load = () => {
+      const siteSelect = document.getElementById('siteName');
+      const typeSelect = document.getElementById('type');
+      const siteInput = document.getElementById('siteInput');
+      const typeInput = document.getElementById('typeInput');
+      const addSiteBtn = document.getElementById('addSiteBtn');
+      const addTypeBtn = document.getElementById('addTypeBtn');
+      const siteChips = document.getElementById('siteChips');
+      const typeChips = document.getElementById('typeChips');
+
+      const readJson = (key, fallback) => {
         try {
-          return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+          const v = JSON.parse(localStorage.getItem(key));
+          return Array.isArray(v) ? v : fallback;
         } catch {
-          return [];
+          return fallback;
         }
       };
+      const saveJson = (key, arr) => localStorage.setItem(key, JSON.stringify(arr));
 
-      const save = (items) => localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      const getItems = () => readJson(STORAGE_KEY_ITEMS, []);
+      const setItems = (items) => saveJson(STORAGE_KEY_ITEMS, items);
+
+      const getSites = () => readJson(STORAGE_KEY_SITES, defaultSites);
+      const setSites = (sites) => saveJson(STORAGE_KEY_SITES, sites);
+
+      const getTypes = () => readJson(STORAGE_KEY_TYPES, defaultTypes);
+      const setTypes = (types) => saveJson(STORAGE_KEY_TYPES, types);
+
+      const toOptions = (select, values) => {
+        select.innerHTML = '';
+        values.forEach((value) => {
+          const opt = document.createElement('option');
+          opt.value = value;
+          opt.textContent = value;
+          select.appendChild(opt);
+        });
+      };
+
+      const renderChips = (container, values, onRemove) => {
+        container.innerHTML = '';
+        values.forEach((value) => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.innerHTML = `<span>${value}</span>`;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = '삭제';
+          btn.addEventListener('click', () => onRemove(value));
+          chip.appendChild(btn);
+          container.appendChild(chip);
+        });
+      };
 
       const daysLeft = (dateText) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const target = new Date(dateText + 'T00:00:00');
-        const ms = target - today;
-        return Math.ceil(ms / (1000 * 60 * 60 * 24));
+        return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
       };
 
       const statusTag = (days) => {
@@ -253,8 +320,35 @@
         return '<span class="status-ok">진행 중</span>';
       };
 
-      const render = () => {
-        const items = load().sort((a, b) => a.reviewDeadline.localeCompare(b.reviewDeadline));
+      const refreshSiteTypeUI = () => {
+        const sites = getSites();
+        const types = getTypes();
+        toOptions(siteSelect, sites);
+        toOptions(typeSelect, types);
+
+        renderChips(siteChips, sites, (name) => {
+          const updated = getSites().filter((s) => s !== name);
+          if (updated.length === 0) {
+            alert('최소 1개의 사이트는 유지해야 합니다.');
+            return;
+          }
+          setSites(updated);
+          refreshSiteTypeUI();
+        });
+
+        renderChips(typeChips, types, (name) => {
+          const updated = getTypes().filter((t) => t !== name);
+          if (updated.length === 0) {
+            alert('최소 1개의 유형은 유지해야 합니다.');
+            return;
+          }
+          setTypes(updated);
+          refreshSiteTypeUI();
+        });
+      };
+
+      const renderList = () => {
+        const items = getItems().sort((a, b) => a.reviewDeadline.localeCompare(b.reviewDeadline));
         listBody.innerHTML = '';
 
         let expiring = 0;
@@ -268,23 +362,13 @@
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>
-              <strong>${item.campaignName}</strong><br>
-              <small style="color:#94a3b8">${item.siteName}</small><br>
-              <small style="color:#94a3b8">${item.memo ? item.memo.replace(/</g, '&lt;') : ''}</small>
-            </td>
+            <td><strong>${item.campaignName}</strong><br><small style="color:#94a3b8">${item.memo ? item.memo.replace(/</g, '&lt;') : ''}</small></td>
+            <td>${item.siteName}</td>
             <td><span class="type">${item.type}</span></td>
             <td>${item.experienceDeadline}<br><small>${expDays}일 남음</small></td>
             <td>${item.reviewDeadline}<br><small>${revDays}일 남음</small></td>
-            <td>
-              체험: ${statusTag(expDays)}<br>
-              리뷰: ${statusTag(revDays)}
-            </td>
-            <td>
-              <div class="actions">
-                <button class="ghost danger" data-remove="${index}" type="button">삭제</button>
-              </div>
-            </td>
+            <td>방문: ${statusTag(expDays)}<br>리뷰: ${statusTag(revDays)}</td>
+            <td><button class="ghost danger" data-remove="${index}" type="button">삭제</button></td>
           `;
           listBody.appendChild(tr);
         });
@@ -295,41 +379,80 @@
         emptyEl.style.display = items.length ? 'none' : 'block';
       };
 
+      document.querySelectorAll('.tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+          document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+        });
+      });
+
+      addSiteBtn.addEventListener('click', () => {
+        const value = siteInput.value.trim();
+        if (!value) return;
+        const sites = getSites();
+        if (sites.includes(value)) {
+          alert('이미 존재하는 사이트입니다.');
+          return;
+        }
+        sites.push(value);
+        setSites(sites);
+        siteInput.value = '';
+        refreshSiteTypeUI();
+      });
+
+      addTypeBtn.addEventListener('click', () => {
+        const value = typeInput.value.trim();
+        if (!value) return;
+        const types = getTypes();
+        if (types.includes(value)) {
+          alert('이미 존재하는 유형입니다.');
+          return;
+        }
+        types.push(value);
+        setTypes(types);
+        typeInput.value = '';
+        refreshSiteTypeUI();
+      });
+
       form.addEventListener('submit', (event) => {
         event.preventDefault();
-        const formData = new FormData(form);
+        const fd = new FormData(form);
         const item = {
-          campaignName: formData.get('campaignName').trim(),
-          siteName: formData.get('siteName').trim(),
-          type: formData.get('type'),
-          experienceDeadline: formData.get('experienceDeadline'),
-          reviewDeadline: formData.get('reviewDeadline'),
-          memo: formData.get('memo').trim()
+          campaignName: fd.get('campaignName').trim(),
+          siteName: fd.get('siteName'),
+          type: fd.get('type'),
+          experienceDeadline: fd.get('experienceDeadline'),
+          reviewDeadline: fd.get('reviewDeadline'),
+          memo: fd.get('memo').trim()
         };
 
         if (item.reviewDeadline < item.experienceDeadline) {
-          alert('리뷰 마감기한은 체험 마감일보다 빠를 수 없습니다.');
+          alert('리뷰 마감기한은 방문마감일보다 빠를 수 없습니다.');
           return;
         }
 
-        const items = load();
+        const items = getItems();
         items.push(item);
-        save(items);
+        setItems(items);
         form.reset();
-        render();
+        refreshSiteTypeUI();
+        renderList();
+        document.querySelector('[data-tab="list"]').click();
       });
 
       listBody.addEventListener('click', (event) => {
-        const removeIndex = event.target.getAttribute('data-remove');
-        if (removeIndex === null) return;
-
-        const items = load();
-        items.splice(Number(removeIndex), 1);
-        save(items);
-        render();
+        const idx = event.target.getAttribute('data-remove');
+        if (idx === null) return;
+        const items = getItems();
+        items.splice(Number(idx), 1);
+        setItems(items);
+        renderList();
       });
 
-      render();
+      refreshSiteTypeUI();
+      renderList();
     </script>
   </body>
 </html>
