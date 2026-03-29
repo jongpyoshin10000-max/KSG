@@ -160,14 +160,14 @@
     </style>
   </head>
   <body>
-    <img class="bg-kitty" src="https://toppng.com/uploads/preview/hello-kitty-11549476722kggz61ch9p.png" alt="헬로키티 포인트 이미지" />
+    <img class="bg-kitty" src="/assets/hello-kitty.svg" alt="헬로키티 포인트 이미지" />
     <div class="container">
       <h1>🎀 헬로키티 체험단 승인 일정 관리</h1>
       <p class="desc">데이터는 서버의 별도 파일에 저장되어 코드 업데이트 후에도 유지됩니다.</p>
 
       <nav class="menu">
-        <button class="tab-btn active" data-tab="register" type="button"><img class="menu-icon" src="https://toppng.com/uploads/preview/hello-kitty-11549476722kggz61ch9p.png" alt="" />체험단 등록 메뉴</button>
-        <button class="tab-btn" data-tab="list" type="button"><img class="menu-icon" src="https://toppng.com/uploads/preview/hello-kitty-11549476722kggz61ch9p.png" alt="" />체험단 목록 메뉴</button>
+        <button class="tab-btn active" data-tab="register" type="button"><img class="menu-icon" src="/assets/hello-kitty.svg" alt="" />체험단 등록 메뉴</button>
+        <button class="tab-btn" data-tab="list" type="button"><img class="menu-icon" src="/assets/hello-kitty.svg" alt="" />체험단 목록 메뉴</button>
       </nav>
 
       <section id="tab-register" class="tab-panel active">
@@ -175,6 +175,12 @@
           <article class="card">
             <h2>승인된 체험단 등록</h2>
             <form id="entry-form">
+              <label for="type">체험단 유형</label>
+              <select id="type" name="type" required></select>
+
+              <label for="siteName">체험단 사이트</label>
+              <select id="siteName" name="siteName" required></select>
+
               <label for="campaignName">체험단 이름</label>
               <input id="campaignName" name="campaignName" placeholder="예: 강남 파스타 체험" required />
 
@@ -184,21 +190,9 @@
               <label for="providedAmount">제공받은금액</label>
               <input id="providedAmount" name="providedAmount" type="number" min="0" step="100" placeholder="예: 50000" required />
 
-              <label for="siteName">체험단 사이트</label>
-              <select id="siteName" name="siteName" required></select>
-
-              <label for="type">체험단 유형</label>
-              <select id="type" name="type" required></select>
-
               <div id="paybackFields" style="display:none;">
                 <label for="paybackAmount">페이백금액</label>
                 <input id="paybackAmount" name="paybackAmount" type="number" min="0" step="100" placeholder="예: 5000" value="0" />
-
-                <label for="paybackDone">페이백완료 (O / X)</label>
-                <select id="paybackDone" name="paybackDone">
-                  <option value="O">O</option>
-                  <option value="X">X</option>
-                </select>
               </div>
 
               <label for="experienceDeadline">방문예약일</label>
@@ -207,22 +201,19 @@
               <label for="reviewDeadline">리뷰 마감기한</label>
               <input id="reviewDeadline" name="reviewDeadline" type="date" required />
 
-              <label for="memo">메모</label>
-              <textarea id="memo" name="memo" placeholder="방문시간, 조건, 링크 등"></textarea>
-
-              <button class="primary" type="submit">등록하기</button>
+              <button id="submitBtn" class="primary" type="submit">등록하기</button>
             </form>
           </article>
 
           <article class="card">
-            <h2><img class="menu-icon" src="https://toppng.com/uploads/preview/hello-kitty-11549476722kggz61ch9p.png" alt="" />체험단 사이트 관리</h2>
+            <h2><img class="menu-icon" src="/assets/hello-kitty.svg" alt="" />체험단 사이트 관리</h2>
             <div class="inline">
               <input id="siteInput" placeholder="새 사이트명 입력" />
               <button id="addSiteBtn" type="button">추가</button>
             </div>
             <div id="siteChips" class="chips"></div>
 
-            <h2 style="margin-top:20px;"><img class="menu-icon" src="https://toppng.com/uploads/preview/hello-kitty-11549476722kggz61ch9p.png" alt="" />체험단 유형관리</h2>
+            <h2 style="margin-top:20px;"><img class="menu-icon" src="/assets/hello-kitty.svg" alt="" />체험단 유형관리</h2>
             <div class="inline">
               <input id="typeInput" placeholder="새 유형명 입력" />
               <button id="addTypeBtn" type="button">추가</button>
@@ -268,6 +259,7 @@
       const totalCount = document.getElementById('totalCount');
       const expiringCount = document.getElementById('expiringCount');
       const reviewDueCount = document.getElementById('reviewDueCount');
+      const submitBtn = document.getElementById('submitBtn');
 
       const siteSelect = document.getElementById('siteName');
       const typeSelect = document.getElementById('type');
@@ -280,6 +272,7 @@
       const paybackFields = document.getElementById('paybackFields');
 
       let store = { sites: [], types: [], items: [] };
+      let editingIndex = null;
 
       const apiGet = async () => {
         const res = await fetch('/api/data');
@@ -370,13 +363,15 @@
       };
 
       const renderList = () => {
-        const items = [...store.items].sort((a, b) => a.reviewDeadline.localeCompare(b.reviewDeadline));
+        const items = store.items
+          .map((item, idx) => ({ item, idx }))
+          .sort((a, b) => a.item.reviewDeadline.localeCompare(b.item.reviewDeadline));
         listBody.innerHTML = '';
 
         let expiring = 0;
         let reviewDue = 0;
 
-        items.forEach((item, index) => {
+        items.forEach(({ item, idx }) => {
           const expDays = daysLeft(item.experienceDeadline);
           const revDays = daysLeft(item.reviewDeadline);
           if (expDays >= 0 && expDays <= 3) expiring += 1;
@@ -390,14 +385,15 @@
               <small style="color:#9d4f73">방문지역: ${item.visitRegion || '-'}</small><br>
               <small style="color:#9d4f73">제공받은금액: ${(Number(item.providedAmount) || 0).toLocaleString()}원</small><br>
               ${isPaybackType(item.type) ? `<small style="color:#9d4f73">페이백금액: ${(Number(item.paybackAmount) || 0).toLocaleString()}원</small><br>` : ''}
-              ${isPaybackType(item.type) ? `<small style="color:#9d4f73">페이백완료: ${item.paybackDone || 'X'}</small><br>` : ''}
-              <small style="color:#9d4f73">${item.memo ? item.memo.replace(/</g, '&lt;') : ''}</small>
             </td>
             <td>${item.siteName}</td>
             <td>${dateWithDay(item.experienceDeadline)}<br><small>${expDays}일 남음</small></td>
             <td>${dateWithDay(item.reviewDeadline)}<br><small>${revDays}일 남음</small></td>
             <td>방문: ${statusTag(expDays)}<br>리뷰: ${statusTag(revDays)}</td>
-            <td><button class="ghost danger" data-remove="${index}" type="button">삭제</button></td>
+            <td>
+              <button class="ghost" data-edit="${idx}" type="button">수정</button>
+              <button class="ghost danger" data-remove="${idx}" type="button">삭제</button>
+            </td>
           `;
           listBody.appendChild(tr);
         });
@@ -448,16 +444,14 @@
         event.preventDefault();
         const fd = new FormData(form);
         const item = {
+          type: fd.get('type'),
+          siteName: fd.get('siteName'),
           campaignName: fd.get('campaignName').trim(),
           visitRegion: fd.get('visitRegion').trim(),
           providedAmount: fd.get('providedAmount'),
           paybackAmount: isPaybackType(fd.get('type')) ? fd.get('paybackAmount') : '0',
-          paybackDone: isPaybackType(fd.get('type')) ? fd.get('paybackDone') : 'X',
-          siteName: fd.get('siteName'),
-          type: fd.get('type'),
           experienceDeadline: fd.get('experienceDeadline'),
-          reviewDeadline: fd.get('reviewDeadline'),
-          memo: fd.get('memo').trim()
+          reviewDeadline: fd.get('reviewDeadline')
         };
 
         if (item.reviewDeadline < item.experienceDeadline) {
@@ -465,7 +459,13 @@
           return;
         }
 
-        store.items.push(item);
+        if (editingIndex !== null) {
+          store.items[editingIndex] = item;
+          editingIndex = null;
+          submitBtn.textContent = '등록하기';
+        } else {
+          store.items.push(item);
+        }
         await apiSave();
         form.reset();
         renderSiteTypeUI();
@@ -474,11 +474,28 @@
       });
 
       listBody.addEventListener('click', async (event) => {
-        const idx = event.target.getAttribute('data-remove');
-        if (idx === null) return;
-        const sorted = [...store.items].sort((a, b) => a.reviewDeadline.localeCompare(b.reviewDeadline));
-        const target = sorted[Number(idx)];
-        store.items = store.items.filter((item) => item !== target);
+        const editIdx = event.target.getAttribute('data-edit');
+        if (editIdx !== null) {
+          const item = store.items[Number(editIdx)];
+          if (!item) return;
+          editingIndex = Number(editIdx);
+          form.type.value = item.type || '';
+          form.siteName.value = item.siteName || '';
+          form.campaignName.value = item.campaignName || '';
+          form.visitRegion.value = item.visitRegion || '';
+          form.providedAmount.value = item.providedAmount || '';
+          syncPaybackFields();
+          form.paybackAmount.value = item.paybackAmount || '0';
+          form.experienceDeadline.value = item.experienceDeadline || '';
+          form.reviewDeadline.value = item.reviewDeadline || '';
+          submitBtn.textContent = '수정 저장';
+          document.querySelector('[data-tab="register"]').click();
+          return;
+        }
+
+        const removeIdx = event.target.getAttribute('data-remove');
+        if (removeIdx === null) return;
+        store.items.splice(Number(removeIdx), 1);
         await apiSave();
         renderList();
       });
