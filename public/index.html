@@ -205,8 +205,16 @@
                 <input id="paybackAmount" name="paybackAmount" type="number" min="0" step="100" placeholder="예: 5000" value="0" />
               </div>
 
-              <label for="experienceDeadline">방문예약일시</label>
+              <label id="experienceDeadlineLabel" for="experienceDeadline">방문예약일시</label>
               <input id="experienceDeadline" name="experienceDeadline" type="datetime-local" required />
+
+              <div id="shippingFields" style="display:none;">
+                <label for="shippingDone">배송여부 (O / X)</label>
+                <select id="shippingDone" name="shippingDone">
+                  <option value="O">O</option>
+                  <option value="X">X</option>
+                </select>
+              </div>
 
               <label for="reviewDeadline">리뷰 마감기한</label>
               <input id="reviewDeadline" name="reviewDeadline" type="date" required />
@@ -297,8 +305,16 @@
             <input id="editPaybackAmount" name="paybackAmount" type="number" min="0" step="100" value="0" />
           </div>
 
-          <label for="editExperienceDeadline">방문예약일시</label>
+          <label id="editExperienceDeadlineLabel" for="editExperienceDeadline">방문예약일시</label>
           <input id="editExperienceDeadline" name="experienceDeadline" type="datetime-local" required />
+
+          <div id="editShippingFields" style="display:none;">
+            <label for="editShippingDone">배송여부 (O / X)</label>
+            <select id="editShippingDone" name="shippingDone">
+              <option value="O">O</option>
+              <option value="X">X</option>
+            </select>
+          </div>
 
           <label for="editReviewDeadline">리뷰 마감기한</label>
           <input id="editReviewDeadline" name="reviewDeadline" type="date" required />
@@ -328,6 +344,8 @@
       const siteChips = document.getElementById('siteChips');
       const typeChips = document.getElementById('typeChips');
       const paybackFields = document.getElementById('paybackFields');
+      const shippingFields = document.getElementById('shippingFields');
+      const experienceDeadlineLabel = document.getElementById('experienceDeadlineLabel');
       const deleteModal = document.getElementById('deleteModal');
       const deleteCancelBtn = document.getElementById('deleteCancelBtn');
       const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
@@ -337,6 +355,8 @@
       const editSiteName = document.getElementById('editSiteName');
       const editPaybackFields = document.getElementById('editPaybackFields');
       const editPaybackAmount = document.getElementById('editPaybackAmount');
+      const editShippingFields = document.getElementById('editShippingFields');
+      const editExperienceDeadlineLabel = document.getElementById('editExperienceDeadlineLabel');
       const editCancelBtn = document.getElementById('editCancelBtn');
 
       let store = { sites: [], types: [], items: [] };
@@ -406,11 +426,16 @@
         return '<span class="status-ok">진행 중</span>';
       };
       const isPaybackType = (typeName) => typeName === '페이백';
+      const isDeliveryType = (typeName) => typeName === '배송형';
       const syncPaybackFields = () => {
         paybackFields.style.display = isPaybackType(typeSelect.value) ? 'block' : 'none';
+        shippingFields.style.display = isDeliveryType(typeSelect.value) ? 'block' : 'none';
+        experienceDeadlineLabel.textContent = isDeliveryType(typeSelect.value) ? '배송완료일' : '방문예약일시';
       };
       const syncEditPaybackFields = () => {
         editPaybackFields.style.display = isPaybackType(editType.value) ? 'block' : 'none';
+        editShippingFields.style.display = isDeliveryType(editType.value) ? 'block' : 'none';
+        editExperienceDeadlineLabel.textContent = isDeliveryType(editType.value) ? '배송완료일' : '방문예약일시';
       };
       const openModal = (modal) => {
         modal.classList.add('show');
@@ -473,6 +498,7 @@
               <small style="color:#9d4f73">방문지역: ${item.visitRegion || '-'}</small><br>
               <small style="color:#9d4f73">제공받은금액: ${(Number(item.providedAmount) || 0).toLocaleString()}원</small><br>
               ${isPaybackType(item.type) ? `<small style="color:#9d4f73">페이백금액: ${(Number(item.paybackAmount) || 0).toLocaleString()}원</small><br>` : ''}
+              ${isDeliveryType(item.type) ? `<small style="color:#9d4f73">배송여부: ${item.shippingDone || 'X'}</small><br>` : ''}
             </td>
             <td>${item.siteName}</td>
             <td>${dateWithDay(item.experienceDeadline)}<br><small>${expDays}일 남음</small></td>
@@ -538,6 +564,7 @@
           visitRegion: fd.get('visitRegion').trim(),
           providedAmount: fd.get('providedAmount'),
           paybackAmount: isPaybackType(fd.get('type')) ? fd.get('paybackAmount') : '0',
+          shippingDone: isDeliveryType(fd.get('type')) ? fd.get('shippingDone') : '',
           experienceDeadline: fd.get('experienceDeadline'),
           reviewDeadline: fd.get('reviewDeadline')
         };
@@ -568,6 +595,7 @@
           editForm.providedAmount.value = item.providedAmount || '';
           syncEditPaybackFields();
           editPaybackAmount.value = item.paybackAmount || '0';
+          editForm.shippingDone.value = item.shippingDone || 'X';
           editForm.experienceDeadline.value = item.experienceDeadline || '';
           editForm.reviewDeadline.value = item.reviewDeadline || '';
           openModal(editModal);
@@ -611,6 +639,7 @@
           visitRegion: fd.get('visitRegion').trim(),
           providedAmount: fd.get('providedAmount'),
           paybackAmount: isPaybackType(fd.get('type')) ? fd.get('paybackAmount') : '0',
+          shippingDone: isDeliveryType(fd.get('type')) ? fd.get('shippingDone') : '',
           experienceDeadline: fd.get('experienceDeadline'),
           reviewDeadline: fd.get('reviewDeadline')
         };
