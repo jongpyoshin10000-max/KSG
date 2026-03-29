@@ -184,23 +184,22 @@
               <label for="providedAmount">제공받은금액</label>
               <input id="providedAmount" name="providedAmount" type="number" min="0" step="100" placeholder="예: 50000" required />
 
-              <label for="extraAmount">추가금액</label>
-              <input id="extraAmount" name="extraAmount" type="number" min="0" step="100" placeholder="예: 10000" value="0" required />
-
-              <label for="paybackAmount">페이백금액</label>
-              <input id="paybackAmount" name="paybackAmount" type="number" min="0" step="100" placeholder="예: 5000" value="0" required />
-
-              <label for="paybackDone">페이백완료 (O / X)</label>
-              <select id="paybackDone" name="paybackDone" required>
-                <option value="O">O</option>
-                <option value="X">X</option>
-              </select>
-
               <label for="siteName">체험단 사이트</label>
               <select id="siteName" name="siteName" required></select>
 
               <label for="type">체험단 유형</label>
               <select id="type" name="type" required></select>
+
+              <div id="paybackFields" style="display:none;">
+                <label for="paybackAmount">페이백금액</label>
+                <input id="paybackAmount" name="paybackAmount" type="number" min="0" step="100" placeholder="예: 5000" value="0" />
+
+                <label for="paybackDone">페이백완료 (O / X)</label>
+                <select id="paybackDone" name="paybackDone">
+                  <option value="O">O</option>
+                  <option value="X">X</option>
+                </select>
+              </div>
 
               <label for="experienceDeadline">방문예약일</label>
               <input id="experienceDeadline" name="experienceDeadline" type="date" required />
@@ -245,9 +244,9 @@
             <table>
               <thead>
                 <tr>
+                  <th>유형</th>
                   <th>체험단</th>
                   <th>사이트</th>
-                  <th>유형</th>
                   <th>방문예약일</th>
                   <th>리뷰 마감기한</th>
                   <th>상태</th>
@@ -278,6 +277,7 @@
       const addTypeBtn = document.getElementById('addTypeBtn');
       const siteChips = document.getElementById('siteChips');
       const typeChips = document.getElementById('typeChips');
+      const paybackFields = document.getElementById('paybackFields');
 
       let store = { sites: [], types: [], items: [] };
 
@@ -338,10 +338,15 @@
         if (days <= 3) return '<span class="status-warn">마감 임박</span>';
         return '<span class="status-ok">진행 중</span>';
       };
+      const isPaybackType = (typeName) => typeName === '페이백';
+      const syncPaybackFields = () => {
+        paybackFields.style.display = isPaybackType(typeSelect.value) ? 'block' : 'none';
+      };
 
       const renderSiteTypeUI = () => {
         toOptions(siteSelect, store.sites);
         toOptions(typeSelect, store.types);
+        syncPaybackFields();
 
         renderChips(siteChips, store.sites, async (name) => {
           if (store.sites.length <= 1) {
@@ -379,17 +384,16 @@
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
+            <td><span class="type">${item.type}</span></td>
             <td>
               <strong>${item.campaignName}</strong><br>
               <small style="color:#9d4f73">방문지역: ${item.visitRegion || '-'}</small><br>
               <small style="color:#9d4f73">제공받은금액: ${(Number(item.providedAmount) || 0).toLocaleString()}원</small><br>
-              <small style="color:#9d4f73">추가금액: ${(Number(item.extraAmount) || 0).toLocaleString()}원</small><br>
-              <small style="color:#9d4f73">페이백금액: ${(Number(item.paybackAmount) || 0).toLocaleString()}원</small><br>
-              <small style="color:#9d4f73">페이백완료: ${item.paybackDone || 'X'}</small><br>
+              ${isPaybackType(item.type) ? `<small style="color:#9d4f73">페이백금액: ${(Number(item.paybackAmount) || 0).toLocaleString()}원</small><br>` : ''}
+              ${isPaybackType(item.type) ? `<small style="color:#9d4f73">페이백완료: ${item.paybackDone || 'X'}</small><br>` : ''}
               <small style="color:#9d4f73">${item.memo ? item.memo.replace(/</g, '&lt;') : ''}</small>
             </td>
             <td>${item.siteName}</td>
-            <td><span class="type">${item.type}</span></td>
             <td>${dateWithDay(item.experienceDeadline)}<br><small>${expDays}일 남음</small></td>
             <td>${dateWithDay(item.reviewDeadline)}<br><small>${revDays}일 남음</small></td>
             <td>방문: ${statusTag(expDays)}<br>리뷰: ${statusTag(revDays)}</td>
@@ -438,6 +442,7 @@
         typeInput.value = '';
         renderSiteTypeUI();
       });
+      typeSelect.addEventListener('change', syncPaybackFields);
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -446,9 +451,8 @@
           campaignName: fd.get('campaignName').trim(),
           visitRegion: fd.get('visitRegion').trim(),
           providedAmount: fd.get('providedAmount'),
-          extraAmount: fd.get('extraAmount'),
-          paybackAmount: fd.get('paybackAmount'),
-          paybackDone: fd.get('paybackDone'),
+          paybackAmount: isPaybackType(fd.get('type')) ? fd.get('paybackAmount') : '0',
+          paybackDone: isPaybackType(fd.get('type')) ? fd.get('paybackDone') : 'X',
           siteName: fd.get('siteName'),
           type: fd.get('type'),
           experienceDeadline: fd.get('experienceDeadline'),
