@@ -3,69 +3,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>체험단 승인 일정 관리</title>
+    <title>헬로키티 체험단 일정 관리</title>
     <style>
       :root {
-        --bg: #0f172a;
-        --panel: #111827;
-        --muted: #94a3b8;
-        --text: #e2e8f0;
-        --primary: #22c55e;
-        --warn: #f59e0b;
-        --danger: #ef4444;
-        --line: #1f2937;
+        --bg-main: #fff7fb;
+        --bg-soft: #ffe4f2;
+        --panel: #ffffff;
+        --line: #f9a8d4;
+        --text: #7a284e;
+        --muted: #9d4f73;
+        --primary: #ec4899;
+        --primary-dark: #be185d;
+        --warn: #d97706;
+        --danger: #dc2626;
       }
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(180deg, #020617, var(--bg));
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         color: var(--text);
+        background: linear-gradient(180deg, #fff, var(--bg-main) 40%, var(--bg-soft));
       }
       .container { max-width: 1080px; margin: 0 auto; padding: 24px; }
-      h1 { margin: 0 0 8px; font-size: 1.7rem; }
-      .desc { color: var(--muted); margin: 0 0 16px; }
+      h1 { margin: 0 0 8px; font-size: 1.8rem; }
+      .desc { margin: 0 0 16px; color: var(--muted); }
 
-      .menu {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 14px;
-      }
+      .menu { display: flex; gap: 8px; margin-bottom: 14px; }
       .tab-btn {
-        border: 1px solid #334155;
-        background: #0b1220;
-        color: #cbd5e1;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
         border-radius: 999px;
         padding: 8px 14px;
         cursor: pointer;
+        font-weight: 600;
       }
       .tab-btn.active {
-        background: #14532d;
-        color: #dcfce7;
-        border-color: #15803d;
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary-dark);
       }
 
       .tab-panel { display: none; }
       .tab-panel.active { display: block; }
 
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-      }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
       .card {
-        background: rgba(17, 24, 39, 0.8);
-        border: 1px solid var(--line);
+        background: var(--panel);
+        border: 1px solid #fbcfe8;
         border-radius: 14px;
         padding: 16px;
+        box-shadow: 0 8px 24px rgba(236, 72, 153, 0.08);
       }
 
-      label { display: block; margin: 10px 0 6px; color: #cbd5e1; font-size: 0.9rem; }
+      label { display: block; margin: 10px 0 6px; color: var(--muted); font-size: 0.9rem; }
       input, select, textarea, button {
         width: 100%;
         border-radius: 10px;
-        border: 1px solid #334155;
-        background: #0b1220;
+        border: 1px solid #f9a8d4;
+        background: #fff;
         color: var(--text);
         padding: 10px;
         font: inherit;
@@ -75,21 +71,16 @@
         margin-top: 14px;
         border: none;
         background: var(--primary);
-        color: #052e16;
+        color: #fff;
         font-weight: 700;
         cursor: pointer;
       }
 
-      .inline {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 8px;
-      }
+      .inline { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
       .inline button {
         width: auto;
-        padding: 10px 12px;
-        background: #1e293b;
-        border: 1px solid #334155;
+        background: #fdf2f8;
+        border: 1px solid #f9a8d4;
         cursor: pointer;
       }
 
@@ -98,8 +89,8 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: #0b1220;
-        border: 1px solid #334155;
+        background: #fff0f6;
+        border: 1px solid #f9a8d4;
         padding: 5px 8px;
         border-radius: 999px;
         font-size: 0.85rem;
@@ -108,44 +99,39 @@
         width: auto;
         margin: 0;
         border: none;
-        background: #7f1d1d;
-        color: #fee2e2;
+        background: #fda4af;
+        color: #7f1d1d;
         border-radius: 999px;
         padding: 2px 8px;
       }
 
-      .summary {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 12px;
-      }
+      .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
       .pill {
-        border: 1px solid var(--line);
+        border: 1px solid #fbcfe8;
         border-radius: 10px;
         padding: 10px;
-        background: #0b1220;
+        background: #fff;
       }
       .pill strong { display: block; margin-top: 4px; font-size: 1.3rem; }
 
       table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
-      th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-      th { text-align: left; color: #cbd5e1; }
-      .type { padding: 2px 8px; border-radius: 999px; border: 1px solid #334155; font-size: 0.8rem; }
+      th, td { padding: 10px 8px; border-bottom: 1px solid #fbcfe8; vertical-align: top; }
+      th { text-align: left; color: var(--muted); }
+      .type { padding: 2px 8px; border-radius: 999px; border: 1px solid #f9a8d4; font-size: 0.8rem; background: #fff0f6; }
 
-      .status-ok { color: var(--primary); }
+      .status-ok { color: var(--primary-dark); }
       .status-warn { color: var(--warn); }
       .status-danger { color: var(--danger); }
 
       .ghost {
-        background: #1e293b;
-        color: #e2e8f0;
-        border: none;
+        background: #fdf2f8;
+        color: var(--text);
+        border: 1px solid #f9a8d4;
         border-radius: 8px;
         padding: 6px 10px;
         cursor: pointer;
       }
-      .ghost.danger { background: #7f1d1d; }
+      .ghost.danger { background: #fee2e2; border-color: #fca5a5; color: #7f1d1d; }
 
       .empty { color: var(--muted); text-align: center; padding: 26px 0; }
 
@@ -157,12 +143,12 @@
   </head>
   <body>
     <div class="container">
-      <h1>체험단 승인 일정 관리</h1>
-      <p class="desc">혼자 사용하는 체험단 관리 도구입니다. 등록 메뉴와 목록 메뉴를 분리해 관리할 수 있습니다.</p>
+      <h1>🎀 헬로키티 체험단 승인 일정 관리</h1>
+      <p class="desc">데이터는 서버의 별도 파일에 저장되어 코드 업데이트 후에도 유지됩니다.</p>
 
       <nav class="menu">
-        <button class="tab-btn active" data-tab="register" type="button">체험단 등록 메뉴</button>
-        <button class="tab-btn" data-tab="list" type="button">체험단 목록 메뉴</button>
+        <button class="tab-btn active" data-tab="register" type="button">🐱 체험단 등록 메뉴</button>
+        <button class="tab-btn" data-tab="list" type="button">🐱 체험단 목록 메뉴</button>
       </nav>
 
       <section id="tab-register" class="tab-panel active">
@@ -193,14 +179,14 @@
           </article>
 
           <article class="card">
-            <h2>체험단 사이트 관리</h2>
+            <h2>🐱 체험단 사이트 관리</h2>
             <div class="inline">
               <input id="siteInput" placeholder="새 사이트명 입력" />
               <button id="addSiteBtn" type="button">추가</button>
             </div>
             <div id="siteChips" class="chips"></div>
 
-            <h2 style="margin-top:20px;">체험단 유형 관리</h2>
+            <h2 style="margin-top:20px;">🐱 체험단 유형 관리</h2>
             <div class="inline">
               <input id="typeInput" placeholder="새 유형명 입력" />
               <button id="addTypeBtn" type="button">추가</button>
@@ -240,13 +226,6 @@
     </div>
 
     <script>
-      const STORAGE_KEY_ITEMS = 'vibe-coding-campaigns-v2';
-      const STORAGE_KEY_SITES = 'vibe-coding-sites-v1';
-      const STORAGE_KEY_TYPES = 'vibe-coding-types-v1';
-
-      const defaultSites = ['레뷰', '링블', '강남맛집체험단'];
-      const defaultTypes = ['방문형', '배송형', '구매형'];
-
       const form = document.getElementById('entry-form');
       const listBody = document.getElementById('list-body');
       const emptyEl = document.getElementById('empty');
@@ -263,24 +242,22 @@
       const siteChips = document.getElementById('siteChips');
       const typeChips = document.getElementById('typeChips');
 
-      const readJson = (key, fallback) => {
-        try {
-          const v = JSON.parse(localStorage.getItem(key));
-          return Array.isArray(v) ? v : fallback;
-        } catch {
-          return fallback;
-        }
+      let store = { sites: [], types: [], items: [] };
+
+      const apiGet = async () => {
+        const res = await fetch('/api/data');
+        if (!res.ok) throw new Error('데이터 조회 실패');
+        return res.json();
       };
-      const saveJson = (key, arr) => localStorage.setItem(key, JSON.stringify(arr));
 
-      const getItems = () => readJson(STORAGE_KEY_ITEMS, []);
-      const setItems = (items) => saveJson(STORAGE_KEY_ITEMS, items);
-
-      const getSites = () => readJson(STORAGE_KEY_SITES, defaultSites);
-      const setSites = (sites) => saveJson(STORAGE_KEY_SITES, sites);
-
-      const getTypes = () => readJson(STORAGE_KEY_TYPES, defaultTypes);
-      const setTypes = (types) => saveJson(STORAGE_KEY_TYPES, types);
+      const apiSave = async () => {
+        const res = await fetch('/api/data', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(store)
+        });
+        if (!res.ok) throw new Error('데이터 저장 실패');
+      };
 
       const toOptions = (select, values) => {
         select.innerHTML = '';
@@ -320,35 +297,33 @@
         return '<span class="status-ok">진행 중</span>';
       };
 
-      const refreshSiteTypeUI = () => {
-        const sites = getSites();
-        const types = getTypes();
-        toOptions(siteSelect, sites);
-        toOptions(typeSelect, types);
+      const renderSiteTypeUI = () => {
+        toOptions(siteSelect, store.sites);
+        toOptions(typeSelect, store.types);
 
-        renderChips(siteChips, sites, (name) => {
-          const updated = getSites().filter((s) => s !== name);
-          if (updated.length === 0) {
+        renderChips(siteChips, store.sites, async (name) => {
+          if (store.sites.length <= 1) {
             alert('최소 1개의 사이트는 유지해야 합니다.');
             return;
           }
-          setSites(updated);
-          refreshSiteTypeUI();
+          store.sites = store.sites.filter((s) => s !== name);
+          await apiSave();
+          renderSiteTypeUI();
         });
 
-        renderChips(typeChips, types, (name) => {
-          const updated = getTypes().filter((t) => t !== name);
-          if (updated.length === 0) {
+        renderChips(typeChips, store.types, async (name) => {
+          if (store.types.length <= 1) {
             alert('최소 1개의 유형은 유지해야 합니다.');
             return;
           }
-          setTypes(updated);
-          refreshSiteTypeUI();
+          store.types = store.types.filter((t) => t !== name);
+          await apiSave();
+          renderSiteTypeUI();
         });
       };
 
       const renderList = () => {
-        const items = getItems().sort((a, b) => a.reviewDeadline.localeCompare(b.reviewDeadline));
+        const items = [...store.items].sort((a, b) => a.reviewDeadline.localeCompare(b.reviewDeadline));
         listBody.innerHTML = '';
 
         let expiring = 0;
@@ -362,7 +337,7 @@
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><strong>${item.campaignName}</strong><br><small style="color:#94a3b8">${item.memo ? item.memo.replace(/</g, '&lt;') : ''}</small></td>
+            <td><strong>${item.campaignName}</strong><br><small style="color:#9d4f73">${item.memo ? item.memo.replace(/</g, '&lt;') : ''}</small></td>
             <td>${item.siteName}</td>
             <td><span class="type">${item.type}</span></td>
             <td>${item.experienceDeadline}<br><small>${expDays}일 남음</small></td>
@@ -388,35 +363,33 @@
         });
       });
 
-      addSiteBtn.addEventListener('click', () => {
+      addSiteBtn.addEventListener('click', async () => {
         const value = siteInput.value.trim();
         if (!value) return;
-        const sites = getSites();
-        if (sites.includes(value)) {
+        if (store.sites.includes(value)) {
           alert('이미 존재하는 사이트입니다.');
           return;
         }
-        sites.push(value);
-        setSites(sites);
+        store.sites.push(value);
+        await apiSave();
         siteInput.value = '';
-        refreshSiteTypeUI();
+        renderSiteTypeUI();
       });
 
-      addTypeBtn.addEventListener('click', () => {
+      addTypeBtn.addEventListener('click', async () => {
         const value = typeInput.value.trim();
         if (!value) return;
-        const types = getTypes();
-        if (types.includes(value)) {
+        if (store.types.includes(value)) {
           alert('이미 존재하는 유형입니다.');
           return;
         }
-        types.push(value);
-        setTypes(types);
+        store.types.push(value);
+        await apiSave();
         typeInput.value = '';
-        refreshSiteTypeUI();
+        renderSiteTypeUI();
       });
 
-      form.addEventListener('submit', (event) => {
+      form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const fd = new FormData(form);
         const item = {
@@ -433,26 +406,33 @@
           return;
         }
 
-        const items = getItems();
-        items.push(item);
-        setItems(items);
+        store.items.push(item);
+        await apiSave();
         form.reset();
-        refreshSiteTypeUI();
+        renderSiteTypeUI();
         renderList();
         document.querySelector('[data-tab="list"]').click();
       });
 
-      listBody.addEventListener('click', (event) => {
+      listBody.addEventListener('click', async (event) => {
         const idx = event.target.getAttribute('data-remove');
         if (idx === null) return;
-        const items = getItems();
-        items.splice(Number(idx), 1);
-        setItems(items);
+        const sorted = [...store.items].sort((a, b) => a.reviewDeadline.localeCompare(b.reviewDeadline));
+        const target = sorted[Number(idx)];
+        store.items = store.items.filter((item) => item !== target);
+        await apiSave();
         renderList();
       });
 
-      refreshSiteTypeUI();
-      renderList();
+      (async () => {
+        try {
+          store = await apiGet();
+          renderSiteTypeUI();
+          renderList();
+        } catch {
+          alert('초기 데이터를 불러오지 못했습니다. 서버 상태를 확인해주세요.');
+        }
+      })();
     </script>
   </body>
 </html>
