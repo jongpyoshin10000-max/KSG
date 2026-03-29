@@ -25,7 +25,7 @@
         background: linear-gradient(180deg, #fff, var(--bg-main) 40%, var(--bg-soft));
         padding-left: 190px;
       }
-      .container { max-width: 1080px; margin: 0 auto; padding: 24px; }
+      .container { max-width: none; width: 100%; margin: 0 auto; padding: 24px; }
       .bg-kitty {
         position: fixed;
         left: 18px;
@@ -70,6 +70,9 @@
         border-radius: 14px;
         padding: 16px;
         box-shadow: 0 8px 24px rgba(236, 72, 153, 0.08);
+      }
+      .list-card {
+        width: 100%;
       }
 
       label { display: block; margin: 10px 0 6px; color: var(--muted); font-size: 0.9rem; }
@@ -195,8 +198,8 @@
                 <input id="paybackAmount" name="paybackAmount" type="number" min="0" step="100" placeholder="예: 5000" value="0" />
               </div>
 
-              <label for="experienceDeadline">방문예약일</label>
-              <input id="experienceDeadline" name="experienceDeadline" type="date" required />
+              <label for="experienceDeadline">방문예약일시</label>
+              <input id="experienceDeadline" name="experienceDeadline" type="datetime-local" required />
 
               <label for="reviewDeadline">리뷰 마감기한</label>
               <input id="reviewDeadline" name="reviewDeadline" type="date" required />
@@ -224,7 +227,7 @@
       </section>
 
       <section id="tab-list" class="tab-panel">
-        <article class="card">
+        <article class="card list-card">
           <div class="summary">
             <div class="pill">총 승인 건수<strong id="totalCount">0</strong></div>
             <div class="pill">방문예약 임박(3일)<strong id="expiringCount">0</strong></div>
@@ -238,7 +241,7 @@
                   <th>유형</th>
                   <th>체험단</th>
                   <th>사이트</th>
-                  <th>방문예약일</th>
+                  <th>방문예약일시</th>
                   <th>리뷰 마감기한</th>
                   <th>상태</th>
                   <th>관리</th>
@@ -314,16 +317,21 @@
         });
       };
 
+      const parseDateTime = (value) => {
+        if (!value) return new Date(NaN);
+        return new Date(value.includes('T') ? value : `${value}T00:00:00`);
+      };
       const daysLeft = (dateText) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const target = new Date(dateText + 'T00:00:00');
+        const target = parseDateTime(dateText);
         return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
       };
       const dateWithDay = (dateText) => {
-        const date = new Date(dateText + 'T00:00:00');
+        const date = parseDateTime(dateText);
         const week = ['일', '월', '화', '수', '목', '금', '토'];
-        return `${dateText} (${week[date.getDay()]})`;
+        const value = dateText.includes('T') ? dateText.replace('T', ' ') : dateText;
+        return `${value} (${week[date.getDay()]})`;
       };
 
       const statusTag = (days) => {
@@ -454,8 +462,8 @@
           reviewDeadline: fd.get('reviewDeadline')
         };
 
-        if (item.reviewDeadline < item.experienceDeadline) {
-          alert('리뷰 마감기한은 방문예약일보다 빠를 수 없습니다.');
+        if (parseDateTime(item.reviewDeadline) < parseDateTime(item.experienceDeadline)) {
+          alert('리뷰 마감기한은 방문예약일시보다 빠를 수 없습니다.');
           return;
         }
 
@@ -495,6 +503,7 @@
 
         const removeIdx = event.target.getAttribute('data-remove');
         if (removeIdx === null) return;
+        if (!confirm('정말로 삭제하시겠습니까?')) return;
         store.items.splice(Number(removeIdx), 1);
         await apiSave();
         renderList();
