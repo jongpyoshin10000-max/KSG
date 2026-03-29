@@ -1,0 +1,13 @@
+{
+  "name": "ksg-vibe-web",
+  "version": "1.0.0",
+  "description": "Simple Node.js vibe coding website",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js"
+  },
+  "keywords": ["node", "web", "vibe-coding"],
+  "author": "",
+  "license": "MIT"
+}
