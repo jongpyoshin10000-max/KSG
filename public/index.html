@@ -23,8 +23,24 @@
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         color: var(--text);
         background: linear-gradient(180deg, #fff, var(--bg-main) 40%, var(--bg-soft));
+        padding-left: 190px;
       }
       .container { max-width: 1080px; margin: 0 auto; padding: 24px; }
+      .bg-kitty {
+        position: fixed;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 190px;
+        opacity: 0.9;
+        pointer-events: none;
+      }
+      .menu-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 6px;
+        vertical-align: -4px;
+      }
       h1 { margin: 0 0 8px; font-size: 1.8rem; }
       .desc { margin: 0 0 16px; color: var(--muted); }
 
@@ -138,17 +154,20 @@
       @media (max-width: 900px) {
         .grid { grid-template-columns: 1fr; }
         .summary { grid-template-columns: 1fr; }
+        body { padding-left: 0; }
+        .bg-kitty { display: none; }
       }
     </style>
   </head>
   <body>
+    <img class="bg-kitty" src="/assets/hello-kitty.svg" alt="헬로키티 포인트 이미지" />
     <div class="container">
       <h1>🎀 헬로키티 체험단 승인 일정 관리</h1>
       <p class="desc">데이터는 서버의 별도 파일에 저장되어 코드 업데이트 후에도 유지됩니다.</p>
 
       <nav class="menu">
-        <button class="tab-btn active" data-tab="register" type="button">🐱 체험단 등록 메뉴</button>
-        <button class="tab-btn" data-tab="list" type="button">🐱 체험단 목록 메뉴</button>
+        <button class="tab-btn active" data-tab="register" type="button"><img class="menu-icon" src="/assets/hello-kitty.svg" alt="" />체험단 등록 메뉴</button>
+        <button class="tab-btn" data-tab="list" type="button"><img class="menu-icon" src="/assets/hello-kitty.svg" alt="" />체험단 목록 메뉴</button>
       </nav>
 
       <section id="tab-register" class="tab-panel active">
@@ -165,7 +184,7 @@
               <label for="type">체험단 유형</label>
               <select id="type" name="type" required></select>
 
-              <label for="experienceDeadline">방문마감일</label>
+              <label for="experienceDeadline">방문예약일</label>
               <input id="experienceDeadline" name="experienceDeadline" type="date" required />
 
               <label for="reviewDeadline">리뷰 마감기한</label>
@@ -211,7 +230,7 @@
                   <th>체험단</th>
                   <th>사이트</th>
                   <th>유형</th>
-                  <th>방문마감일</th>
+                  <th>방문예약일</th>
                   <th>리뷰 마감기한</th>
                   <th>상태</th>
                   <th>관리</th>
@@ -402,7 +421,7 @@
         };
 
         if (item.reviewDeadline < item.experienceDeadline) {
-          alert('리뷰 마감기한은 방문마감일보다 빠를 수 없습니다.');
+          alert('리뷰 마감기한은 방문예약일보다 빠를 수 없습니다.');
           return;
         }
 
