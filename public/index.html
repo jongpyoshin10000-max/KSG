@@ -207,6 +207,9 @@
               <label for="providedAmount">제공받은금액</label>
               <input id="providedAmount" name="providedAmount" type="number" min="0" step="100" placeholder="예: 50000" required />
 
+              <label for="additionalCost">추가비용</label>
+              <input id="additionalCost" name="additionalCost" type="text" value="없음" />
+
               <div id="paybackFields" style="display:none;">
                 <label for="paybackAmount">페이백금액</label>
                 <input id="paybackAmount" name="paybackAmount" type="number" min="0" step="100" placeholder="예: 5000" value="0" />
@@ -222,14 +225,10 @@
                   <option value="O">O</option>
                 </select>
 
-                <label for="additionalCost">추가비용</label>
-                <input id="additionalCost" name="additionalCost" type="number" min="0" step="100" value="0" />
               </div>
 
-              <div id="visitMissionFields" style="display:none;">
-                <label for="additionalMission">추가미션</label>
-                <textarea id="additionalMission" name="additionalMission" placeholder="예: 네이버영수증리뷰 / 네이버클립"></textarea>
-              </div>
+              <label for="additionalMission">추가미션</label>
+              <textarea id="additionalMission" name="additionalMission" placeholder="예: 네이버영수증리뷰 / 네이버클립">없음</textarea>
 
               <label for="reviewDeadline">리뷰 마감기한</label>
               <input id="reviewDeadline" name="reviewDeadline" type="date" required />
@@ -270,6 +269,13 @@
             <div class="pill">방문예약 임박(3일)<strong id="expiringCount">0</strong></div>
             <div class="pill">리뷰마감 임박(3일)<strong id="reviewDueCount">0</strong></div>
           </div>
+
+          <div class="inline" style="margin-bottom:8px;">
+            <button id="prevMonthBtn" type="button">이전 달</button>
+            <button id="nextMonthBtn" type="button">다음 달</button>
+          </div>
+          <h3 id="calendarLabel" style="margin:8px 0;"></h3>
+          <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:16px;"></div>
 
           <div style="overflow-x:auto;">
             <table>
@@ -343,9 +349,6 @@
               <option value="X">X</option>
               <option value="O">O</option>
             </select>
-
-            <label for="editAdditionalCost">추가비용</label>
-            <input id="editAdditionalCost" name="additionalCost" type="number" min="0" step="100" value="0" />
           </div>
 
           <div id="editVisitFields" style="display:none;">
@@ -354,10 +357,13 @@
 
             <label for="editExtraUsageAmount">추가사용금액</label>
             <input id="editExtraUsageAmount" name="extraUsageAmount" type="number" min="0" step="100" value="0" />
-
-            <label for="editAdditionalMission">추가미션</label>
-            <textarea id="editAdditionalMission" name="additionalMission" placeholder="예: 네이버영수증리뷰 / 네이버클립"></textarea>
           </div>
+
+          <label for="editAdditionalCost">추가비용</label>
+          <input id="editAdditionalCost" name="additionalCost" type="text" value="없음" />
+
+          <label for="editAdditionalMissionAll">추가미션</label>
+          <textarea id="editAdditionalMissionAll" name="additionalMission" placeholder="예: 네이버영수증리뷰 / 네이버클립">없음</textarea>
 
           <label for="editReviewDeadline">리뷰 마감기한</label>
           <input id="editReviewDeadline" name="reviewDeadline" type="date" required />
@@ -394,8 +400,11 @@
       const paybackCategory = document.getElementById('paybackCategory');
       const visitRegionGroup = document.getElementById('visitRegionGroup');
       const shippingFields = document.getElementById('shippingFields');
-      const visitMissionFields = document.getElementById('visitMissionFields');
       const experienceDeadlineLabel = document.getElementById('experienceDeadlineLabel');
+      const prevMonthBtn = document.getElementById('prevMonthBtn');
+      const nextMonthBtn = document.getElementById('nextMonthBtn');
+      const calendarLabel = document.getElementById('calendarLabel');
+      const calendarGrid = document.getElementById('calendarGrid');
       const deleteModal = document.getElementById('deleteModal');
       const deleteCancelBtn = document.getElementById('deleteCancelBtn');
       const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
@@ -412,12 +421,13 @@
       const editAdditionalCost = document.getElementById('editAdditionalCost');
       const editExperienceDeadlineLabel = document.getElementById('editExperienceDeadlineLabel');
       const editVisitFields = document.getElementById('editVisitFields');
-      const editAdditionalMission = document.getElementById('editAdditionalMission');
+      const editAdditionalMissionAll = document.getElementById('editAdditionalMissionAll');
       const editCancelBtn = document.getElementById('editCancelBtn');
 
       let store = { sites: [], types: [], classifications: ['방문', '배송'], items: [] };
       let pendingDeleteIndex = null;
       let pendingEditIndex = null;
+      let currentCalendarDate = new Date();
 
       const apiGet = async () => {
         const res = await fetch('/api/data');
@@ -493,7 +503,6 @@
         paybackFields.style.display = isPaybackType(typeSelect.value) ? 'block' : 'none';
         paybackCategoryFields.style.display = isPaybackType(typeSelect.value) ? 'block' : 'none';
         shippingFields.style.display = isDelivery ? 'block' : 'none';
-        visitMissionFields.style.display = isVisitType(typeSelect.value) || isPaybackVisit(typeSelect.value, paybackCategory.value) ? 'block' : 'none';
         experienceDeadlineLabel.textContent = isDelivery ? '배송완료일' : '방문예약일시';
       };
       const syncEditPaybackFields = () => {
@@ -579,10 +588,10 @@
               ${isPaybackType(item.type) ? `<small style="color:#9d4f73">구분: ${item.paybackCategory || '-'}</small><br>` : ''}
               ${!(isDeliveryType(item.type) || isPaybackDelivery(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">방문지역: ${item.visitRegion || '-'}</small><br>` : ''}
               <small style="color:#9d4f73">제공받은금액: ${(Number(item.providedAmount) || 0).toLocaleString()}원</small><br>
-              ${(isDeliveryType(item.type) || isPaybackDelivery(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">추가비용: ${(Number(item.additionalCost) || 0).toLocaleString()}원</small><br>` : ''}
+              <small style="color:#9d4f73">추가비용: ${item.additionalCost || '없음'}</small><br>
               ${(isVisitType(item.type) || isPaybackVisit(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">방문시간: ${item.visitTime || '-'}</small><br>` : ''}
               ${(isVisitType(item.type) || isPaybackVisit(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">추가사용금액: ${(Number(item.extraUsageAmount) || 0).toLocaleString()}원</small><br>` : ''}
-              ${(isVisitType(item.type) || isPaybackVisit(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">추가미션: ${item.additionalMission || '-'}</small><br>` : ''}
+              <small style="color:#9d4f73">추가미션: ${item.additionalMission || '없음'}</small><br>
               ${isPaybackType(item.type) ? `<small style="color:#9d4f73">페이백금액: ${(Number(item.paybackAmount) || 0).toLocaleString()}원</small><br>` : ''}
               ${(isDeliveryType(item.type) || isPaybackDelivery(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">배송여부: ${item.shippingDone || 'X'}</small><br>` : ''}
             </td>
@@ -602,6 +611,61 @@
         expiringCount.textContent = String(expiring);
         reviewDueCount.textContent = String(reviewDue);
         emptyEl.style.display = items.length ? 'none' : 'block';
+        renderCalendar(items.map((v) => v.item));
+      };
+
+      const renderCalendar = (items) => {
+        const y = currentCalendarDate.getFullYear();
+        const m = currentCalendarDate.getMonth();
+        calendarLabel.textContent = `${y}년 ${m + 1}월`;
+        calendarGrid.innerHTML = '';
+        ['일', '월', '화', '수', '목', '금', '토'].forEach((d) => {
+          const el = document.createElement('div');
+          el.style.fontWeight = '700';
+          el.style.textAlign = 'center';
+          el.textContent = d;
+          calendarGrid.appendChild(el);
+        });
+
+        const firstDay = new Date(y, m, 1).getDay();
+        const daysInMonth = new Date(y, m + 1, 0).getDate();
+        const mapped = {};
+        items.forEach((item) => {
+          const d = parseDateTime(item.experienceDeadline);
+          if (d.getFullYear() === y && d.getMonth() === m) {
+            const day = d.getDate();
+            mapped[day] = mapped[day] || [];
+            mapped[day].push(item);
+          }
+        });
+
+        for (let i = 0; i < firstDay; i += 1) {
+          const blank = document.createElement('div');
+          calendarGrid.appendChild(blank);
+        }
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const cell = document.createElement('div');
+          cell.style.border = '1px solid #fbcfe8';
+          cell.style.borderRadius = '8px';
+          cell.style.padding = '6px';
+          cell.style.minHeight = '90px';
+          cell.innerHTML = `<strong>${day}</strong>`;
+          const list = mapped[day] || [];
+          list.slice(0, 3).forEach((it) => {
+            const p = document.createElement('div');
+            p.style.fontSize = '12px';
+            p.style.marginTop = '4px';
+            p.textContent = `• ${it.campaignName}`;
+            cell.appendChild(p);
+          });
+          if (list.length > 3) {
+            const more = document.createElement('div');
+            more.style.fontSize = '12px';
+            more.textContent = `+${list.length - 3}건`;
+            cell.appendChild(more);
+          }
+          calendarGrid.appendChild(cell);
+        }
       };
 
       document.querySelectorAll('.tab-btn').forEach((btn) => {
@@ -651,6 +715,14 @@
         classificationInput.value = '';
         renderSiteTypeUI();
       });
+      prevMonthBtn.addEventListener('click', () => {
+        currentCalendarDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() - 1, 1);
+        renderList();
+      });
+      nextMonthBtn.addEventListener('click', () => {
+        currentCalendarDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 1);
+        renderList();
+      });
       typeSelect.addEventListener('change', syncPaybackFields);
       paybackCategory.addEventListener('change', syncPaybackFields);
 
@@ -670,10 +742,10 @@
           providedAmount: fd.get('providedAmount'),
           paybackAmount: isPaybackType(selectedType) ? fd.get('paybackAmount') : '0',
           shippingDone: isDeliveryContext ? fd.get('shippingDone') : '',
-          additionalCost: isDeliveryContext ? fd.get('additionalCost') : '0',
+          additionalCost: (fd.get('additionalCost') || '없음').trim() || '없음',
           visitTime: isVisitContext ? (fd.get('visitTime') || '') : '',
           extraUsageAmount: isVisitContext ? (fd.get('extraUsageAmount') || '0') : '0',
-          additionalMission: isVisitContext ? fd.get('additionalMission').trim() : '',
+          additionalMission: (fd.get('additionalMission') || '없음').trim() || '없음',
           experienceDeadline: fd.get('experienceDeadline'),
           reviewDeadline: fd.get('reviewDeadline')
         };
@@ -706,10 +778,10 @@
           syncEditPaybackFields();
           editPaybackAmount.value = item.paybackAmount || '0';
           editForm.shippingDone.value = item.shippingDone || 'X';
-          editAdditionalCost.value = item.additionalCost || '0';
+          editAdditionalCost.value = item.additionalCost || '없음';
           editForm.visitTime.value = item.visitTime || '';
           editForm.extraUsageAmount.value = item.extraUsageAmount || '0';
-          editAdditionalMission.value = item.additionalMission || '';
+          editAdditionalMissionAll.value = item.additionalMission || '없음';
           editForm.experienceDeadline.value = item.experienceDeadline || '';
           editForm.reviewDeadline.value = item.reviewDeadline || '';
           openModal(editModal);
@@ -760,10 +832,10 @@
           providedAmount: fd.get('providedAmount'),
           paybackAmount: isPaybackType(selectedType) ? fd.get('paybackAmount') : '0',
           shippingDone: isDeliveryContext ? fd.get('shippingDone') : '',
-          additionalCost: isDeliveryContext ? fd.get('additionalCost') : '0',
+          additionalCost: (fd.get('additionalCost') || '없음').trim() || '없음',
           visitTime: isVisitContext ? (fd.get('visitTime') || '') : '',
           extraUsageAmount: isVisitContext ? (fd.get('extraUsageAmount') || '0') : '0',
-          additionalMission: isVisitContext ? fd.get('additionalMission').trim() : '',
+          additionalMission: (fd.get('additionalMission') || '없음').trim() || '없음',
           experienceDeadline: fd.get('experienceDeadline'),
           reviewDeadline: fd.get('reviewDeadline')
         };
