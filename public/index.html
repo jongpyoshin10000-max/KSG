@@ -194,6 +194,11 @@
               <label for="campaignName">체험단 이름</label>
               <input id="campaignName" name="campaignName" placeholder="예: 강남 파스타 체험" required />
 
+              <div id="paybackCategoryFields" style="display:none;">
+                <label for="paybackCategory">구분</label>
+                <select id="paybackCategory" name="paybackCategory"></select>
+              </div>
+
               <div id="visitRegionGroup">
                 <label for="visitRegion">방문지역</label>
                 <input id="visitRegion" name="visitRegion" placeholder="예: 서울 강남구" required />
@@ -247,6 +252,13 @@
               <button id="addTypeBtn" type="button">추가</button>
             </div>
             <div id="typeChips" class="chips"></div>
+
+            <h2 style="margin-top:20px;">체험단 구분관리</h2>
+            <div class="inline">
+              <input id="classificationInput" placeholder="새 구분명 입력" />
+              <button id="addClassificationBtn" type="button">추가</button>
+            </div>
+            <div id="classificationChips" class="chips"></div>
           </article>
         </div>
       </section>
@@ -303,6 +315,11 @@
 
           <label for="editCampaignName">체험단 이름</label>
           <input id="editCampaignName" name="campaignName" required />
+
+          <div id="editPaybackCategoryFields" style="display:none;">
+            <label for="editPaybackCategory">구분</label>
+            <select id="editPaybackCategory" name="paybackCategory"></select>
+          </div>
 
           <div id="editVisitRegionGroup">
             <label for="editVisitRegion">방문지역</label>
@@ -365,11 +382,16 @@
       const typeSelect = document.getElementById('type');
       const siteInput = document.getElementById('siteInput');
       const typeInput = document.getElementById('typeInput');
+      const classificationInput = document.getElementById('classificationInput');
       const addSiteBtn = document.getElementById('addSiteBtn');
       const addTypeBtn = document.getElementById('addTypeBtn');
+      const addClassificationBtn = document.getElementById('addClassificationBtn');
       const siteChips = document.getElementById('siteChips');
       const typeChips = document.getElementById('typeChips');
+      const classificationChips = document.getElementById('classificationChips');
       const paybackFields = document.getElementById('paybackFields');
+      const paybackCategoryFields = document.getElementById('paybackCategoryFields');
+      const paybackCategory = document.getElementById('paybackCategory');
       const visitRegionGroup = document.getElementById('visitRegionGroup');
       const shippingFields = document.getElementById('shippingFields');
       const visitMissionFields = document.getElementById('visitMissionFields');
@@ -381,6 +403,8 @@
       const editForm = document.getElementById('editForm');
       const editType = document.getElementById('editType');
       const editSiteName = document.getElementById('editSiteName');
+      const editPaybackCategoryFields = document.getElementById('editPaybackCategoryFields');
+      const editPaybackCategory = document.getElementById('editPaybackCategory');
       const editVisitRegionGroup = document.getElementById('editVisitRegionGroup');
       const editPaybackFields = document.getElementById('editPaybackFields');
       const editPaybackAmount = document.getElementById('editPaybackAmount');
@@ -391,7 +415,7 @@
       const editAdditionalMission = document.getElementById('editAdditionalMission');
       const editCancelBtn = document.getElementById('editCancelBtn');
 
-      let store = { sites: [], types: [], items: [] };
+      let store = { sites: [], types: [], classifications: ['방문', '배송'], items: [] };
       let pendingDeleteIndex = null;
       let pendingEditIndex = null;
 
@@ -460,22 +484,26 @@
       const isPaybackType = (typeName) => typeName === '페이백';
       const isDeliveryType = (typeName) => typeName === '배송형';
       const isVisitType = (typeName) => typeName === '방문형';
+      const isPaybackDelivery = (typeName, classification) => isPaybackType(typeName) && classification === '배송';
+      const isPaybackVisit = (typeName, classification) => isPaybackType(typeName) && classification !== '배송';
       const syncPaybackFields = () => {
-        const isDelivery = isDeliveryType(typeSelect.value);
+        const isDelivery = isDeliveryType(typeSelect.value) || isPaybackDelivery(typeSelect.value, paybackCategory.value);
         visitRegionGroup.style.display = isDelivery ? 'none' : 'block';
         form.visitRegion.required = !isDelivery;
         paybackFields.style.display = isPaybackType(typeSelect.value) ? 'block' : 'none';
+        paybackCategoryFields.style.display = isPaybackType(typeSelect.value) ? 'block' : 'none';
         shippingFields.style.display = isDelivery ? 'block' : 'none';
-        visitMissionFields.style.display = isVisitType(typeSelect.value) ? 'block' : 'none';
+        visitMissionFields.style.display = isVisitType(typeSelect.value) || isPaybackVisit(typeSelect.value, paybackCategory.value) ? 'block' : 'none';
         experienceDeadlineLabel.textContent = isDelivery ? '배송완료일' : '방문예약일시';
       };
       const syncEditPaybackFields = () => {
-        const isDelivery = isDeliveryType(editType.value);
+        const isDelivery = isDeliveryType(editType.value) || isPaybackDelivery(editType.value, editPaybackCategory.value);
         editVisitRegionGroup.style.display = isDelivery ? 'none' : 'block';
         editForm.visitRegion.required = !isDelivery;
         editPaybackFields.style.display = isPaybackType(editType.value) ? 'block' : 'none';
+        editPaybackCategoryFields.style.display = isPaybackType(editType.value) ? 'block' : 'none';
         editShippingFields.style.display = isDelivery ? 'block' : 'none';
-        editVisitFields.style.display = isVisitType(editType.value) ? 'block' : 'none';
+        editVisitFields.style.display = isVisitType(editType.value) || isPaybackVisit(editType.value, editPaybackCategory.value) ? 'block' : 'none';
         editExperienceDeadlineLabel.textContent = isDelivery ? '배송완료일' : '방문예약일시';
       };
       const openModal = (modal) => {
@@ -490,8 +518,10 @@
       const renderSiteTypeUI = () => {
         toOptions(siteSelect, store.sites);
         toOptions(typeSelect, store.types);
+        toOptions(paybackCategory, store.classifications || ['방문', '배송']);
         toOptions(editSiteName, store.sites);
         toOptions(editType, store.types);
+        toOptions(editPaybackCategory, store.classifications || ['방문', '배송']);
         syncPaybackFields();
         syncEditPaybackFields();
 
@@ -511,6 +541,16 @@
             return;
           }
           store.types = store.types.filter((t) => t !== name);
+          await apiSave();
+          renderSiteTypeUI();
+        });
+
+        renderChips(classificationChips, store.classifications || ['방문', '배송'], async (name) => {
+          if (!store.classifications || store.classifications.length <= 1) {
+            alert('최소 1개의 구분은 유지해야 합니다.');
+            return;
+          }
+          store.classifications = store.classifications.filter((c) => c !== name);
           await apiSave();
           renderSiteTypeUI();
         });
@@ -536,14 +576,15 @@
             <td><span class="type">${item.type}</span></td>
             <td>
               <strong>${item.campaignName}</strong><br>
-              ${!isDeliveryType(item.type) ? `<small style="color:#9d4f73">방문지역: ${item.visitRegion || '-'}</small><br>` : ''}
+              ${isPaybackType(item.type) ? `<small style="color:#9d4f73">구분: ${item.paybackCategory || '-'}</small><br>` : ''}
+              ${!(isDeliveryType(item.type) || isPaybackDelivery(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">방문지역: ${item.visitRegion || '-'}</small><br>` : ''}
               <small style="color:#9d4f73">제공받은금액: ${(Number(item.providedAmount) || 0).toLocaleString()}원</small><br>
-              ${isDeliveryType(item.type) ? `<small style="color:#9d4f73">추가비용: ${(Number(item.additionalCost) || 0).toLocaleString()}원</small><br>` : ''}
-              ${isVisitType(item.type) ? `<small style="color:#9d4f73">방문시간: ${item.visitTime || '-'}</small><br>` : ''}
-              ${isVisitType(item.type) ? `<small style="color:#9d4f73">추가사용금액: ${(Number(item.extraUsageAmount) || 0).toLocaleString()}원</small><br>` : ''}
-              ${isVisitType(item.type) ? `<small style="color:#9d4f73">추가미션: ${item.additionalMission || '-'}</small><br>` : ''}
+              ${(isDeliveryType(item.type) || isPaybackDelivery(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">추가비용: ${(Number(item.additionalCost) || 0).toLocaleString()}원</small><br>` : ''}
+              ${(isVisitType(item.type) || isPaybackVisit(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">방문시간: ${item.visitTime || '-'}</small><br>` : ''}
+              ${(isVisitType(item.type) || isPaybackVisit(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">추가사용금액: ${(Number(item.extraUsageAmount) || 0).toLocaleString()}원</small><br>` : ''}
+              ${(isVisitType(item.type) || isPaybackVisit(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">추가미션: ${item.additionalMission || '-'}</small><br>` : ''}
               ${isPaybackType(item.type) ? `<small style="color:#9d4f73">페이백금액: ${(Number(item.paybackAmount) || 0).toLocaleString()}원</small><br>` : ''}
-              ${isDeliveryType(item.type) ? `<small style="color:#9d4f73">배송여부: ${item.shippingDone || 'X'}</small><br>` : ''}
+              ${(isDeliveryType(item.type) || isPaybackDelivery(item.type, item.paybackCategory)) ? `<small style="color:#9d4f73">배송여부: ${item.shippingDone || 'X'}</small><br>` : ''}
             </td>
             <td>${item.siteName}</td>
             <td>${dateWithDay(item.experienceDeadline)}<br><small>${expDays}일 남음</small></td>
@@ -597,23 +638,42 @@
         typeInput.value = '';
         renderSiteTypeUI();
       });
+      addClassificationBtn.addEventListener('click', async () => {
+        const value = classificationInput.value.trim();
+        if (!value) return;
+        store.classifications = store.classifications || ['방문', '배송'];
+        if (store.classifications.includes(value)) {
+          alert('이미 존재하는 구분입니다.');
+          return;
+        }
+        store.classifications.push(value);
+        await apiSave();
+        classificationInput.value = '';
+        renderSiteTypeUI();
+      });
       typeSelect.addEventListener('change', syncPaybackFields);
+      paybackCategory.addEventListener('change', syncPaybackFields);
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const fd = new FormData(form);
+        const selectedType = fd.get('type');
+        const selectedPaybackCategory = isPaybackType(selectedType) ? fd.get('paybackCategory') : '';
+        const isDeliveryContext = isDeliveryType(selectedType) || isPaybackDelivery(selectedType, selectedPaybackCategory);
+        const isVisitContext = isVisitType(selectedType) || isPaybackVisit(selectedType, selectedPaybackCategory);
         const item = {
-          type: fd.get('type'),
+          type: selectedType,
+          paybackCategory: selectedPaybackCategory,
           siteName: fd.get('siteName'),
           campaignName: fd.get('campaignName').trim(),
-          visitRegion: isDeliveryType(fd.get('type')) ? '' : fd.get('visitRegion').trim(),
+          visitRegion: isDeliveryContext ? '' : fd.get('visitRegion').trim(),
           providedAmount: fd.get('providedAmount'),
-          paybackAmount: isPaybackType(fd.get('type')) ? fd.get('paybackAmount') : '0',
-          shippingDone: isDeliveryType(fd.get('type')) ? fd.get('shippingDone') : '',
-          additionalCost: isDeliveryType(fd.get('type')) ? fd.get('additionalCost') : '0',
-          visitTime: '',
-          extraUsageAmount: '0',
-          additionalMission: isVisitType(fd.get('type')) ? fd.get('additionalMission').trim() : '',
+          paybackAmount: isPaybackType(selectedType) ? fd.get('paybackAmount') : '0',
+          shippingDone: isDeliveryContext ? fd.get('shippingDone') : '',
+          additionalCost: isDeliveryContext ? fd.get('additionalCost') : '0',
+          visitTime: isVisitContext ? (fd.get('visitTime') || '') : '',
+          extraUsageAmount: isVisitContext ? (fd.get('extraUsageAmount') || '0') : '0',
+          additionalMission: isVisitContext ? fd.get('additionalMission').trim() : '',
           experienceDeadline: fd.get('experienceDeadline'),
           reviewDeadline: fd.get('reviewDeadline')
         };
@@ -638,6 +698,7 @@
           if (!item) return;
           pendingEditIndex = Number(editIdx);
           editType.value = item.type || '';
+          editPaybackCategory.value = item.paybackCategory || (store.classifications && store.classifications[0]) || '방문';
           editSiteName.value = item.siteName || '';
           editForm.campaignName.value = item.campaignName || '';
           editForm.visitRegion.value = item.visitRegion || '';
@@ -676,6 +737,7 @@
       });
 
       editType.addEventListener('change', syncEditPaybackFields);
+      editPaybackCategory.addEventListener('change', syncEditPaybackFields);
       editCancelBtn.addEventListener('click', () => {
         pendingEditIndex = null;
         closeModal(editModal);
@@ -685,18 +747,23 @@
         event.preventDefault();
         if (pendingEditIndex === null) return;
         const fd = new FormData(editForm);
+        const selectedType = fd.get('type');
+        const selectedPaybackCategory = isPaybackType(selectedType) ? fd.get('paybackCategory') : '';
+        const isDeliveryContext = isDeliveryType(selectedType) || isPaybackDelivery(selectedType, selectedPaybackCategory);
+        const isVisitContext = isVisitType(selectedType) || isPaybackVisit(selectedType, selectedPaybackCategory);
         const item = {
-          type: fd.get('type'),
+          type: selectedType,
+          paybackCategory: selectedPaybackCategory,
           siteName: fd.get('siteName'),
           campaignName: fd.get('campaignName').trim(),
-          visitRegion: isDeliveryType(fd.get('type')) ? '' : fd.get('visitRegion').trim(),
+          visitRegion: isDeliveryContext ? '' : fd.get('visitRegion').trim(),
           providedAmount: fd.get('providedAmount'),
-          paybackAmount: isPaybackType(fd.get('type')) ? fd.get('paybackAmount') : '0',
-          shippingDone: isDeliveryType(fd.get('type')) ? fd.get('shippingDone') : '',
-          additionalCost: isDeliveryType(fd.get('type')) ? fd.get('additionalCost') : '0',
-          visitTime: isVisitType(fd.get('type')) ? fd.get('visitTime') : '',
-          extraUsageAmount: isVisitType(fd.get('type')) ? fd.get('extraUsageAmount') : '0',
-          additionalMission: isVisitType(fd.get('type')) ? fd.get('additionalMission').trim() : '',
+          paybackAmount: isPaybackType(selectedType) ? fd.get('paybackAmount') : '0',
+          shippingDone: isDeliveryContext ? fd.get('shippingDone') : '',
+          additionalCost: isDeliveryContext ? fd.get('additionalCost') : '0',
+          visitTime: isVisitContext ? (fd.get('visitTime') || '') : '',
+          extraUsageAmount: isVisitContext ? (fd.get('extraUsageAmount') || '0') : '0',
+          additionalMission: isVisitContext ? fd.get('additionalMission').trim() : '',
           experienceDeadline: fd.get('experienceDeadline'),
           reviewDeadline: fd.get('reviewDeadline')
         };
@@ -716,6 +783,9 @@
       (async () => {
         try {
           store = await apiGet();
+          if (!Array.isArray(store.classifications) || store.classifications.length === 0) {
+            store.classifications = ['방문', '배송'];
+          }
           renderSiteTypeUI();
           renderList();
         } catch {

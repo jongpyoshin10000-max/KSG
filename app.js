@@ -20,6 +20,7 @@ const contentTypes = {
 const defaultData = {
   sites: ['레뷰', '링블', '강남맛집체험단'],
   types: ['방문형', '배송형', '구매형'],
+  classifications: ['방문', '배송'],
   items: []
 };
 
@@ -39,6 +40,7 @@ const readData = () => {
     return {
       sites: Array.isArray(parsed.sites) ? parsed.sites : defaultData.sites,
       types: Array.isArray(parsed.types) ? parsed.types : defaultData.types,
+      classifications: Array.isArray(parsed.classifications) ? parsed.classifications : defaultData.classifications,
       items: Array.isArray(parsed.items) ? parsed.items : []
     };
   } catch {
@@ -76,6 +78,7 @@ const server = http.createServer((req, res) => {
         const data = {
           sites: Array.isArray(input.sites) ? input.sites : defaultData.sites,
           types: Array.isArray(input.types) ? input.types : defaultData.types,
+          classifications: Array.isArray(input.classifications) ? input.classifications : defaultData.classifications,
           items: Array.isArray(input.items) ? input.items : []
         };
 
