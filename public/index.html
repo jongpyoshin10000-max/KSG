@@ -194,8 +194,10 @@
               <label for="campaignName">체험단 이름</label>
               <input id="campaignName" name="campaignName" placeholder="예: 강남 파스타 체험" required />
 
-              <label for="visitRegion">방문지역</label>
-              <input id="visitRegion" name="visitRegion" placeholder="예: 서울 강남구" required />
+              <div id="visitRegionGroup">
+                <label for="visitRegion">방문지역</label>
+                <input id="visitRegion" name="visitRegion" placeholder="예: 서울 강남구" required />
+              </div>
 
               <label for="providedAmount">제공받은금액</label>
               <input id="providedAmount" name="providedAmount" type="number" min="0" step="100" placeholder="예: 50000" required />
@@ -211,9 +213,12 @@
               <div id="shippingFields" style="display:none;">
                 <label for="shippingDone">배송여부 (O / X)</label>
                 <select id="shippingDone" name="shippingDone">
-                  <option value="O">O</option>
                   <option value="X">X</option>
+                  <option value="O">O</option>
                 </select>
+
+                <label for="additionalCost">추가비용</label>
+                <input id="additionalCost" name="additionalCost" type="number" min="0" step="100" value="0" />
               </div>
 
               <div id="visitMissionFields" style="display:none;">
@@ -299,8 +304,10 @@
           <label for="editCampaignName">체험단 이름</label>
           <input id="editCampaignName" name="campaignName" required />
 
-          <label for="editVisitRegion">방문지역</label>
-          <input id="editVisitRegion" name="visitRegion" required />
+          <div id="editVisitRegionGroup">
+            <label for="editVisitRegion">방문지역</label>
+            <input id="editVisitRegion" name="visitRegion" required />
+          </div>
 
           <label for="editProvidedAmount">제공받은금액</label>
           <input id="editProvidedAmount" name="providedAmount" type="number" min="0" step="100" required />
@@ -316,9 +323,12 @@
           <div id="editShippingFields" style="display:none;">
             <label for="editShippingDone">배송여부 (O / X)</label>
             <select id="editShippingDone" name="shippingDone">
-              <option value="O">O</option>
               <option value="X">X</option>
+              <option value="O">O</option>
             </select>
+
+            <label for="editAdditionalCost">추가비용</label>
+            <input id="editAdditionalCost" name="additionalCost" type="number" min="0" step="100" value="0" />
           </div>
 
           <div id="editVisitFields" style="display:none;">
@@ -360,6 +370,7 @@
       const siteChips = document.getElementById('siteChips');
       const typeChips = document.getElementById('typeChips');
       const paybackFields = document.getElementById('paybackFields');
+      const visitRegionGroup = document.getElementById('visitRegionGroup');
       const shippingFields = document.getElementById('shippingFields');
       const visitMissionFields = document.getElementById('visitMissionFields');
       const experienceDeadlineLabel = document.getElementById('experienceDeadlineLabel');
@@ -370,9 +381,11 @@
       const editForm = document.getElementById('editForm');
       const editType = document.getElementById('editType');
       const editSiteName = document.getElementById('editSiteName');
+      const editVisitRegionGroup = document.getElementById('editVisitRegionGroup');
       const editPaybackFields = document.getElementById('editPaybackFields');
       const editPaybackAmount = document.getElementById('editPaybackAmount');
       const editShippingFields = document.getElementById('editShippingFields');
+      const editAdditionalCost = document.getElementById('editAdditionalCost');
       const editExperienceDeadlineLabel = document.getElementById('editExperienceDeadlineLabel');
       const editVisitFields = document.getElementById('editVisitFields');
       const editAdditionalMission = document.getElementById('editAdditionalMission');
@@ -448,16 +461,22 @@
       const isDeliveryType = (typeName) => typeName === '배송형';
       const isVisitType = (typeName) => typeName === '방문형';
       const syncPaybackFields = () => {
+        const isDelivery = isDeliveryType(typeSelect.value);
+        visitRegionGroup.style.display = isDelivery ? 'none' : 'block';
+        form.visitRegion.required = !isDelivery;
         paybackFields.style.display = isPaybackType(typeSelect.value) ? 'block' : 'none';
-        shippingFields.style.display = isDeliveryType(typeSelect.value) ? 'block' : 'none';
+        shippingFields.style.display = isDelivery ? 'block' : 'none';
         visitMissionFields.style.display = isVisitType(typeSelect.value) ? 'block' : 'none';
-        experienceDeadlineLabel.textContent = isDeliveryType(typeSelect.value) ? '배송완료일' : '방문예약일시';
+        experienceDeadlineLabel.textContent = isDelivery ? '배송완료일' : '방문예약일시';
       };
       const syncEditPaybackFields = () => {
+        const isDelivery = isDeliveryType(editType.value);
+        editVisitRegionGroup.style.display = isDelivery ? 'none' : 'block';
+        editForm.visitRegion.required = !isDelivery;
         editPaybackFields.style.display = isPaybackType(editType.value) ? 'block' : 'none';
-        editShippingFields.style.display = isDeliveryType(editType.value) ? 'block' : 'none';
+        editShippingFields.style.display = isDelivery ? 'block' : 'none';
         editVisitFields.style.display = isVisitType(editType.value) ? 'block' : 'none';
-        editExperienceDeadlineLabel.textContent = isDeliveryType(editType.value) ? '배송완료일' : '방문예약일시';
+        editExperienceDeadlineLabel.textContent = isDelivery ? '배송완료일' : '방문예약일시';
       };
       const openModal = (modal) => {
         modal.classList.add('show');
@@ -517,8 +536,9 @@
             <td><span class="type">${item.type}</span></td>
             <td>
               <strong>${item.campaignName}</strong><br>
-              <small style="color:#9d4f73">방문지역: ${item.visitRegion || '-'}</small><br>
+              ${!isDeliveryType(item.type) ? `<small style="color:#9d4f73">방문지역: ${item.visitRegion || '-'}</small><br>` : ''}
               <small style="color:#9d4f73">제공받은금액: ${(Number(item.providedAmount) || 0).toLocaleString()}원</small><br>
+              ${isDeliveryType(item.type) ? `<small style="color:#9d4f73">추가비용: ${(Number(item.additionalCost) || 0).toLocaleString()}원</small><br>` : ''}
               ${isVisitType(item.type) ? `<small style="color:#9d4f73">방문시간: ${item.visitTime || '-'}</small><br>` : ''}
               ${isVisitType(item.type) ? `<small style="color:#9d4f73">추가사용금액: ${(Number(item.extraUsageAmount) || 0).toLocaleString()}원</small><br>` : ''}
               ${isVisitType(item.type) ? `<small style="color:#9d4f73">추가미션: ${item.additionalMission || '-'}</small><br>` : ''}
@@ -586,10 +606,11 @@
           type: fd.get('type'),
           siteName: fd.get('siteName'),
           campaignName: fd.get('campaignName').trim(),
-          visitRegion: fd.get('visitRegion').trim(),
+          visitRegion: isDeliveryType(fd.get('type')) ? '' : fd.get('visitRegion').trim(),
           providedAmount: fd.get('providedAmount'),
           paybackAmount: isPaybackType(fd.get('type')) ? fd.get('paybackAmount') : '0',
           shippingDone: isDeliveryType(fd.get('type')) ? fd.get('shippingDone') : '',
+          additionalCost: isDeliveryType(fd.get('type')) ? fd.get('additionalCost') : '0',
           visitTime: '',
           extraUsageAmount: '0',
           additionalMission: isVisitType(fd.get('type')) ? fd.get('additionalMission').trim() : '',
@@ -624,6 +645,7 @@
           syncEditPaybackFields();
           editPaybackAmount.value = item.paybackAmount || '0';
           editForm.shippingDone.value = item.shippingDone || 'X';
+          editAdditionalCost.value = item.additionalCost || '0';
           editForm.visitTime.value = item.visitTime || '';
           editForm.extraUsageAmount.value = item.extraUsageAmount || '0';
           editAdditionalMission.value = item.additionalMission || '';
@@ -667,10 +689,11 @@
           type: fd.get('type'),
           siteName: fd.get('siteName'),
           campaignName: fd.get('campaignName').trim(),
-          visitRegion: fd.get('visitRegion').trim(),
+          visitRegion: isDeliveryType(fd.get('type')) ? '' : fd.get('visitRegion').trim(),
           providedAmount: fd.get('providedAmount'),
           paybackAmount: isPaybackType(fd.get('type')) ? fd.get('paybackAmount') : '0',
           shippingDone: isDeliveryType(fd.get('type')) ? fd.get('shippingDone') : '',
+          additionalCost: isDeliveryType(fd.get('type')) ? fd.get('additionalCost') : '0',
           visitTime: isVisitType(fd.get('type')) ? fd.get('visitTime') : '',
           extraUsageAmount: isVisitType(fd.get('type')) ? fd.get('extraUsageAmount') : '0',
           additionalMission: isVisitType(fd.get('type')) ? fd.get('additionalMission').trim() : '',
