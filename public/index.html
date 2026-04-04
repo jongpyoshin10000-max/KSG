@@ -216,6 +216,11 @@
                 </select>
               </div>
 
+              <div id="visitMissionFields" style="display:none;">
+                <label for="additionalMission">추가미션</label>
+                <textarea id="additionalMission" name="additionalMission" placeholder="예: 네이버영수증리뷰 / 네이버클립"></textarea>
+              </div>
+
               <label for="reviewDeadline">리뷰 마감기한</label>
               <input id="reviewDeadline" name="reviewDeadline" type="date" required />
 
@@ -322,6 +327,9 @@
 
             <label for="editExtraUsageAmount">추가사용금액</label>
             <input id="editExtraUsageAmount" name="extraUsageAmount" type="number" min="0" step="100" value="0" />
+
+            <label for="editAdditionalMission">추가미션</label>
+            <textarea id="editAdditionalMission" name="additionalMission" placeholder="예: 네이버영수증리뷰 / 네이버클립"></textarea>
           </div>
 
           <label for="editReviewDeadline">리뷰 마감기한</label>
@@ -353,6 +361,7 @@
       const typeChips = document.getElementById('typeChips');
       const paybackFields = document.getElementById('paybackFields');
       const shippingFields = document.getElementById('shippingFields');
+      const visitMissionFields = document.getElementById('visitMissionFields');
       const experienceDeadlineLabel = document.getElementById('experienceDeadlineLabel');
       const deleteModal = document.getElementById('deleteModal');
       const deleteCancelBtn = document.getElementById('deleteCancelBtn');
@@ -366,6 +375,7 @@
       const editShippingFields = document.getElementById('editShippingFields');
       const editExperienceDeadlineLabel = document.getElementById('editExperienceDeadlineLabel');
       const editVisitFields = document.getElementById('editVisitFields');
+      const editAdditionalMission = document.getElementById('editAdditionalMission');
       const editCancelBtn = document.getElementById('editCancelBtn');
 
       let store = { sites: [], types: [], items: [] };
@@ -440,6 +450,7 @@
       const syncPaybackFields = () => {
         paybackFields.style.display = isPaybackType(typeSelect.value) ? 'block' : 'none';
         shippingFields.style.display = isDeliveryType(typeSelect.value) ? 'block' : 'none';
+        visitMissionFields.style.display = isVisitType(typeSelect.value) ? 'block' : 'none';
         experienceDeadlineLabel.textContent = isDeliveryType(typeSelect.value) ? '배송완료일' : '방문예약일시';
       };
       const syncEditPaybackFields = () => {
@@ -510,6 +521,7 @@
               <small style="color:#9d4f73">제공받은금액: ${(Number(item.providedAmount) || 0).toLocaleString()}원</small><br>
               ${isVisitType(item.type) ? `<small style="color:#9d4f73">방문시간: ${item.visitTime || '-'}</small><br>` : ''}
               ${isVisitType(item.type) ? `<small style="color:#9d4f73">추가사용금액: ${(Number(item.extraUsageAmount) || 0).toLocaleString()}원</small><br>` : ''}
+              ${isVisitType(item.type) ? `<small style="color:#9d4f73">추가미션: ${item.additionalMission || '-'}</small><br>` : ''}
               ${isPaybackType(item.type) ? `<small style="color:#9d4f73">페이백금액: ${(Number(item.paybackAmount) || 0).toLocaleString()}원</small><br>` : ''}
               ${isDeliveryType(item.type) ? `<small style="color:#9d4f73">배송여부: ${item.shippingDone || 'X'}</small><br>` : ''}
             </td>
@@ -580,6 +592,7 @@
           shippingDone: isDeliveryType(fd.get('type')) ? fd.get('shippingDone') : '',
           visitTime: '',
           extraUsageAmount: '0',
+          additionalMission: isVisitType(fd.get('type')) ? fd.get('additionalMission').trim() : '',
           experienceDeadline: fd.get('experienceDeadline'),
           reviewDeadline: fd.get('reviewDeadline')
         };
@@ -613,6 +626,7 @@
           editForm.shippingDone.value = item.shippingDone || 'X';
           editForm.visitTime.value = item.visitTime || '';
           editForm.extraUsageAmount.value = item.extraUsageAmount || '0';
+          editAdditionalMission.value = item.additionalMission || '';
           editForm.experienceDeadline.value = item.experienceDeadline || '';
           editForm.reviewDeadline.value = item.reviewDeadline || '';
           openModal(editModal);
@@ -659,6 +673,7 @@
           shippingDone: isDeliveryType(fd.get('type')) ? fd.get('shippingDone') : '',
           visitTime: isVisitType(fd.get('type')) ? fd.get('visitTime') : '',
           extraUsageAmount: isVisitType(fd.get('type')) ? fd.get('extraUsageAmount') : '0',
+          additionalMission: isVisitType(fd.get('type')) ? fd.get('additionalMission').trim() : '',
           experienceDeadline: fd.get('experienceDeadline'),
           reviewDeadline: fd.get('reviewDeadline')
         };
