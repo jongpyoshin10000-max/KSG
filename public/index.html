@@ -307,14 +307,21 @@
             <div class="pill">리뷰마감 임박(3일)<strong id="reviewDueCount">0</strong></div>
           </div>
 
-          <div class="inline" style="margin-bottom:8px;">
+          <div class="menu" style="margin-bottom:8px;">
+            <button id="calendarModeBtn" class="tab-btn active" type="button">달력 보기</button>
+            <button id="tableModeBtn" class="tab-btn" type="button">목록 보기</button>
+          </div>
+
+          <div id="calendarSection">
+            <div class="inline" style="margin-bottom:8px;">
             <button id="prevMonthBtn" type="button">이전 달</button>
             <button id="nextMonthBtn" type="button">다음 달</button>
+            </div>
+            <h3 id="calendarLabel" style="margin:8px 0;"></h3>
+            <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:16px;"></div>
           </div>
-          <h3 id="calendarLabel" style="margin:8px 0;"></h3>
-          <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:16px;"></div>
 
-          <div style="overflow-x:auto;">
+          <div id="tableSection" style="overflow-x:auto; display:none;">
             <table>
               <thead>
                 <tr>
@@ -440,6 +447,10 @@
       const experienceDeadlineLabel = document.getElementById('experienceDeadlineLabel');
       const prevMonthBtn = document.getElementById('prevMonthBtn');
       const nextMonthBtn = document.getElementById('nextMonthBtn');
+      const calendarModeBtn = document.getElementById('calendarModeBtn');
+      const tableModeBtn = document.getElementById('tableModeBtn');
+      const calendarSection = document.getElementById('calendarSection');
+      const tableSection = document.getElementById('tableSection');
       const calendarLabel = document.getElementById('calendarLabel');
       const calendarGrid = document.getElementById('calendarGrid');
       const deleteModal = document.getElementById('deleteModal');
@@ -559,6 +570,13 @@
       const closeModal = (modal) => {
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
+      };
+      const setListMode = (mode) => {
+        const isCalendar = mode === 'calendar';
+        calendarSection.style.display = isCalendar ? 'block' : 'none';
+        tableSection.style.display = isCalendar ? 'none' : 'block';
+        calendarModeBtn.classList.toggle('active', isCalendar);
+        tableModeBtn.classList.toggle('active', !isCalendar);
       };
 
       const renderSiteTypeUI = () => {
@@ -760,6 +778,8 @@
         currentCalendarDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 1);
         renderList();
       });
+      calendarModeBtn.addEventListener('click', () => setListMode('calendar'));
+      tableModeBtn.addEventListener('click', () => setListMode('table'));
       typeSelect.addEventListener('change', syncPaybackFields);
       paybackCategory.addEventListener('change', syncPaybackFields);
 
@@ -895,6 +915,7 @@
           if (!Array.isArray(store.classifications) || store.classifications.length === 0) {
             store.classifications = ['방문', '배송'];
           }
+          setListMode('calendar');
           renderSiteTypeUI();
           renderList();
         } catch {
