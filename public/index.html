@@ -22,40 +22,8 @@
         margin: 0;
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         color: var(--text);
-        background: radial-gradient(circle at 20% 20%, #fff 0%, #ffeaf5 45%, #ffd7ea 100%);
+        background: #070b10 url('/assets/home-bg.svg') center / cover fixed no-repeat;
         overflow-x: hidden;
-      }
-      body::before,
-      body::after {
-        content: '';
-        position: fixed;
-        inset: -10% 0 0 0;
-        pointer-events: none;
-        z-index: 0;
-        background-repeat: repeat;
-        animation: sakuraFall linear infinite;
-      }
-      body::before {
-        opacity: 0.45;
-        background-image:
-          radial-gradient(circle at 10px 10px, rgba(255, 170, 200, 0.9) 0 6px, transparent 7px),
-          radial-gradient(circle at 30px 26px, rgba(255, 196, 220, 0.85) 0 5px, transparent 6px),
-          radial-gradient(circle at 58px 14px, rgba(255, 182, 210, 0.9) 0 4px, transparent 5px);
-        background-size: 120px 120px;
-        animation-duration: 22s;
-      }
-      body::after {
-        opacity: 0.3;
-        background-image:
-          radial-gradient(circle at 16px 12px, rgba(255, 210, 230, 0.8) 0 5px, transparent 6px),
-          radial-gradient(circle at 44px 38px, rgba(255, 170, 205, 0.75) 0 4px, transparent 5px),
-          radial-gradient(circle at 74px 24px, rgba(255, 200, 225, 0.75) 0 6px, transparent 7px);
-        background-size: 150px 150px;
-        animation-duration: 30s;
-      }
-      @keyframes sakuraFall {
-        from { transform: translateY(-10%) translateX(0); }
-        to { transform: translateY(110%) translateX(24px); }
       }
       .container { max-width: none; width: 100%; margin: 0 auto; padding: 24px; }
       .container, .modal {
