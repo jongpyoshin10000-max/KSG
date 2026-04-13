@@ -539,8 +539,8 @@
         if (days <= 3) return '<span class="status-warn">마감 임박</span>';
         return '<span class="status-ok">진행 중</span>';
       };
-      const isPaybackType = (typeName) => typeName === '페이백';
-      const isDeliveryType = (typeName) => typeName === '배송형';
+      const isPaybackType = (typeName) => typeName === '페이백형' || typeName === '페이백+구매평';
+      const isDeliveryType = (typeName) => typeName === '배달형';
       const isVisitType = (typeName) => typeName === '방문형';
       const isPaybackDelivery = (typeName, classification) => isPaybackType(typeName) && classification === '배송';
       const isPaybackVisit = (typeName, classification) => isPaybackType(typeName) && classification !== '배송';

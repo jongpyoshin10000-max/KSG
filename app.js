@@ -19,7 +19,7 @@ const contentTypes = {
 
 const defaultData = {
   sites: ['레뷰', '링블', '강남맛집체험단'],
-  types: ['방문형', '배송형', '구매형'],
+  types: ['방문형', '제공형', '페이백형', '페이백+구매평', '구매평', '배달형'],
   classifications: ['방문', '배송'],
   items: []
 };
