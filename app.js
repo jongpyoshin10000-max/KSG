@@ -75,11 +75,12 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         const input = JSON.parse(body || '{}');
+        const current = readData();
         const data = {
-          sites: Array.isArray(input.sites) ? input.sites : defaultData.sites,
-          types: Array.isArray(input.types) ? input.types : defaultData.types,
-          classifications: Array.isArray(input.classifications) ? input.classifications : defaultData.classifications,
-          items: Array.isArray(input.items) ? input.items : []
+          sites: Array.isArray(input.sites) ? input.sites : current.sites,
+          types: Array.isArray(input.types) ? input.types : current.types,
+          classifications: Array.isArray(input.classifications) ? input.classifications : current.classifications,
+          items: Array.isArray(input.items) ? input.items : current.items
         };
 
         writeData(data, (err) => {
