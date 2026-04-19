@@ -1,13 +1,21 @@
 {
-  "name": "ksg-vibe-web",
+  "name": "experience-schedule-manager",
   "version": "1.0.0",
-  "description": "Simple Node.js vibe coding website",
-  "main": "app.js",
+  "private": true,
+  "description": "체험단 일정관리 MVP",
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
-    "start": "node app.js",
-    "dev": "node app.js"
+    "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm --workspace server run dev",
+    "dev:client": "npm --workspace client run dev",
+    "build": "npm --workspace client run build",
+    "start": "npm --workspace server run start",
+    "lint": "npm --workspace client run lint"
   },
-  "keywords": ["node", "web", "vibe-coding"],
-  "author": "",
-  "license": "MIT"
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
 }

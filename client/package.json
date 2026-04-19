@@ -1,0 +1,26 @@
+{
+  "name": "experience-schedule-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "echo 'lint skipped'"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.66.8",
+    "axios": "^1.8.1",
+    "dayjs": "^1.11.13",
+    "react": "^18.3.1",
+    "react-big-calendar": "^1.17.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.15.1",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "vite": "^6.1.0"
+  }
+}

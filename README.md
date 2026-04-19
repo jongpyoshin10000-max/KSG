@@ -1,55 +1,119 @@
-# 블로그 체험단 일정관리 웹사이트 (Node.js)
+# 체험단 일정관리 MVP
 
-기존 구글시트 운영 화면을 참고해 만든 블로그 체험단 일정관리 페이지입니다.
-승인된 체험단 항목을 표 형태로 관리하고, 상단 통계/정렬 기능으로 일정을 한눈에 볼 수 있습니다.
+Node.js + Express + React 기반의 개인용 체험단 운영 시스템입니다. DB 없이 로컬 JSON 파일(`server/src/data/storage.json`)을 저장소로 사용하며, 향후 로그인/DB 확장을 고려해 Repository + Service 레이어로 분리했습니다.
 
-## 핵심 변경점
-- 데이터 저장 위치를 브라우저가 아닌 **서버 파일**로 분리
-  - `data/experiences.json` 파일에 저장
-  - 코드 업데이트 후에도 데이터 유지
-- 구글시트 느낌의 통계 보드/표 스타일로 UI 구성
+## 1) 전체 아키텍처
 
-## 주요 기능
-- **구글시트 스타일 요약 통계**
-  - 리뷰 유형 통계: 합계/배송/방문/페이백 + 미완료 건수
-  - 금액 통계: 제공받은금액 합계, 추가금액 합계, 추가금액 비율, 총사용 금액
-- **정렬하기**
-  - 리뷰등록 마감일 기준 오름차순 정렬
-- **등록 폼 + 목록 표 연동**
-  - 사이트/캠페인/방문지역/유형/배송여부/배송일자/방문예약일/방문시간/리뷰마감일/리뷰등록여부/금액/추가미션 입력
-  - 저장 후 목록 즉시 반영 및 서버 JSON 파일에 영속 저장
-- **표시 강화**
-  - 사이트/유형/완료여부를 컬러 pill로 시각화
-  - 방문예약일/리뷰마감일의 D-Day 및 요일 표시
-- **기존 데이터 호환**
-  - 기존 `data/experiences.json` 데이터는 유지하며, 누락 필드는 화면에서 기본값으로 안전 보정
+- **Frontend (React + Vite)**
+  - 탭 기반 UI: 체험단목록 / 체험단통계 / 캘린더 / 알림
+  - 등록/수정 공통 모달 폼 + 확장 필드(extraFields) 지원
+  - 통계 차트(Recharts), 월간 캘린더(react-big-calendar)
+- **Backend (Express)**
+  - REST API 제공
+  - `ExperienceService`에서 요약/통계/알림 계산
+  - `ExperienceRepository`에서 JSON 파일 저장소 접근
+- **Storage (JSON file)**
+  - 단일 스토리지 파일 구조 (`config`, `experiences`, `personalSchedules`, `notifications`)
+  - write queue를 통한 간단한 파일 I/O 충돌 완화
 
-## 시작하기
-
-### 1) 요구사항
-- Node.js 18 이상
-
-### 2) 실행
-```bash
-npm run start
-```
-
-브라우저에서 아래 주소를 엽니다.
-- http://localhost:3000
-
-## 프로젝트 구조
+## 2) 폴더 구조
 
 ```text
 .
-├── app.js
-├── data/
-│   └── experiences.json
+├── client
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.js
+│   └── src
+│       ├── api
+│       ├── components
+│       ├── constants
+│       ├── hooks
+│       ├── pages
+│       ├── styles
+│       └── utils
+├── server
+│   ├── package.json
+│   └── src
+│       ├── app.js
+│       ├── index.js
+│       ├── constants
+│       ├── middleware
+│       ├── repositories
+│       ├── routes
+│       ├── services
+│       ├── utils
+│       └── data/storage.json
 ├── package.json
-├── public/
-│   └── index.html
 └── README.md
 ```
 
-## API
-- `GET /api/data`: 현재 데이터 조회
-- `PUT /api/data`: 데이터 저장
+## 3) 데이터 모델
+
+`storage.json`
+
+- `meta`: 버전/수정시각
+- `config`
+  - `sites[]`, `types[]`, `statuses[]` (상수/설정 분리)
+- `experiences[]`
+  - 기본 필드 + `extraFields`(schema tolerant)
+- `personalSchedules[]`
+  - 캘린더 사용자 일정
+- `notifications[]`
+  - 읽음 상태 저장
+
+## 4) 실행 방법
+
+### 요구사항
+- Node.js 18+
+
+### 설치
+```bash
+npm install
+```
+
+### 개발 실행 (권장)
+```bash
+npm run dev
+```
+- frontend: http://localhost:5173
+- backend API: http://localhost:4000/api
+
+### 프로덕션 실행
+```bash
+npm run build
+npm run start
+```
+- server: http://localhost:4000
+
+## 5) 환경설정 예시
+
+현재 MVP는 별도 `.env` 없이 동작합니다. 필요한 경우 아래처럼 확장 가능합니다.
+
+```env
+PORT=4000
+```
+
+## 6) 핵심 기능
+
+- 체험단 CRUD
+- 사이트/유형/상태/페이백 필터 + 검색 + 정렬
+- 상세 패널(기본/일정/리뷰/금액/링크/메모/확장필드)
+- 요약 카드(전체 건수, 유형/상태 일부, 제공/환급/페이백 합계)
+- 통계 탭(년/월/일 버킷, 유형 파이차트, 완료율)
+- 캘린더 탭
+  - 전체 체험단(리뷰마감, 검정)
+  - 방문형(방문예약, 파랑)
+  - 개인일정(노랑 음영, CRUD)
+- 알림 탭
+  - 7일/3일/1일 전 알림
+  - 읽음 처리 및 저장
+  - 미확인 존재 시 탭 `N` 표시
+
+## 7) 향후 확장 포인트
+
+- **Auth 모듈 확장 지점**: `server/src/app.js` 주석 위치에 auth router/middleware 추가
+- **DB 전환**: `BaseRepository` 인터페이스 구현체 교체
+- **필드 확장**: `extraFields`로 화면/CRUD의 하위호환 유지
+- **알림 확장**: 이벤트 종류(배송/제출) 추가 가능
+
