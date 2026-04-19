@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>블로그 체험단 일정관리</title>
+    <style>
+      :root {
+        --bg: #f6f8fb;
+        --card: #ffffff;
+        --line: #d8deea;
+        --head: #ece5ff;
+        --head-border: #baa9ec;
+        --text: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        color: var(--text);
+        background: var(--bg) url('/assets/home-bg.svg') no-repeat center top / cover;
+      }
+      .wrap {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 16px;
+        backdrop-filter: saturate(1.04);
+      }
+      .top {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 10px;
+        align-items: stretch;
+        margin-bottom: 10px;
+      }
+      .sort-btn {
+        border: none;
+        border-radius: 12px;
+        background: #f59e0b;
+        color: #fff;
+        font-size: 26px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .summary-board {
+        border: 1px solid var(--head-border);
+        border-radius: 12px;
+        background: rgba(255,255,255,.94);
+        overflow: hidden;
+      }
+      .summary-title {
+        background: var(--head);
+        padding: 8px 12px;
+        font-weight: 700;
+        border-bottom: 1px solid var(--head-border);
+      }
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      .summary-cell {
+        padding: 8px 10px;
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        min-height: 66px;
+      }
+      .summary-cell:nth-child(4n) { border-right: none; }
+      .label { font-size: 12px; color:#596275; }
+      .value { margin-top: 6px; font-size: 22px; font-weight: 700; }
+
+      .panel {
+        margin-bottom: 10px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,.95);
+      }
+      h3 { margin: 0 0 10px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0,1fr));
+        gap: 8px;
+      }
+      input, select, button {
+        width: 100%;
+        min-height: 38px;
+        border: 1px solid #cfd6e4;
+        border-radius: 8px;
+        padding: 7px 9px;
+        background: #fff;
+      }
+      .table-wrap {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: auto;
+        background: rgba(255,255,255,.95);
+      }
+      table { width: 100%; border-collapse: collapse; min-width: 2200px; font-size: 13px; }
+      th, td { border-bottom: 1px solid #e5e9f1; padding: 6px 8px; white-space: nowrap; }
+      th { position: sticky; top: 0; background: #eef2f8; z-index: 2; }
+      tr:hover td { background: #f8fbff; }
+
+      .pill {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 3px 10px;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .p-site { background: #6663b8; }
+      .p-visit { background: #374151; }
+      .p-delivery { background: #c02626; }
+      .p-payback { background: #a16207; }
+      .p-normal { background: #2563eb; }
+      .p-o { background: #1d4ed8; }
+      .p-x { background: #b91c1c; }
+
+      .dday.upcoming { color: #0f766e; font-weight: 700; }
+      .dday.today { color: #b45309; font-weight: 700; }
+      .dday.overdue { color: #b91c1c; font-weight: 700; }
+
+      .actions button {
+        background: #fff;
+        cursor: pointer;
+      }
+
+      @media (max-width: 1200px) {
+        .grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+        .top { grid-template-columns: 1fr; }
+        .sort-btn { min-height: 56px; font-size: 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <button class="sort-btn" id="sortBtn" type="button">정렬하기</button>
+        <div class="summary-board">
+          <div class="summary-title">리뷰 유형 통계</div>
+          <div class="summary-grid">
+            <div class="summary-cell"><div class="label">합계</div><div class="value" id="sumTotal">0</div></div>
+            <div class="summary-cell"><div class="label">배송</div><div class="value" id="sumDelivery">0</div></div>
+            <div class="summary-cell"><div class="label">방문</div><div class="value" id="sumVisit">0</div></div>
+            <div class="summary-cell"><div class="label">페이백</div><div class="value" id="sumPayback">0</div></div>
+            <div class="summary-cell"><div class="label">미완료(전체)</div><div class="value" id="sumTodo">0</div></div>
+            <div class="summary-cell"><div class="label">미완료(배송)</div><div class="value" id="sumDeliveryTodo">0</div></div>
+            <div class="summary-cell"><div class="label">미완료(방문)</div><div class="value" id="sumVisitTodo">0</div></div>
+            <div class="summary-cell"><div class="label">미완료(페이백)</div><div class="value" id="sumPaybackTodo">0</div></div>
+          </div>
+          <div class="summary-title">금액 통계</div>
+          <div class="summary-grid">
+            <div class="summary-cell"><div class="label">제공받은금액 합계</div><div class="value" id="sumProvided">0</div></div>
+            <div class="summary-cell"><div class="label">추가금액 합계</div><div class="value" id="sumExtra">0</div></div>
+            <div class="summary-cell"><div class="label">추가금액 합계 비율</div><div class="value" id="sumExtraRatio">0%</div></div>
+            <div class="summary-cell"><div class="label">총사용 금액</div><div class="value" id="sumUsage">0</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>블로그 체험단 일정관리 - 항목 등록</h3>
+        <form id="form" class="grid">
+          <input list="siteList" name="site" placeholder="사이트" required />
+          <datalist id="siteList"></datalist>
+          <input name="campaign" placeholder="캠페인명" required />
+          <input name="region" placeholder="방문지역" />
+          <select name="type" id="typeSelect" required></select>
+          <select name="delivery_done"><option value="X">배송 X</option><option value="O">배송 O</option></select>
+          <input name="delivery_date" type="date" />
+          <input name="visit_date" type="date" />
+          <input name="visit_time" type="time" />
+          <input name="review_deadline" type="date" required />
+          <select name="review_done"><option value="X">리뷰등록 X</option><option value="O">리뷰등록 O</option></select>
+          <input name="provided" type="number" min="0" placeholder="제공받은금액" value="0" />
+          <input name="extra" type="number" min="0" placeholder="추가금액" value="0" />
+          <input name="payback" type="number" min="0" placeholder="페이백금액" value="0" />
+          <select name="payback_done"><option value="X">페이백 X</option><option value="O">페이백 O</option></select>
+          <input name="mission" placeholder="추가미션 (예: 네이버영수증리뷰/네이버클립)" />
+          <button type="submit">등록</button>
+        </form>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>사이트</th><th>캠페인명</th><th>방문지역</th><th>유형</th><th>배송여부</th>
+              <th>배송일자</th><th>방문예약일</th><th>방문시간</th><th>방문 예약잔여(일)</th><th>방문 예약요일</th>
+              <th>리뷰등록 마감일</th><th>마감 잔여(일)</th><th>리뷰등록여부</th>
+              <th>제공받은금액</th><th>추가금액</th><th>페이백금액</th><th>페이백완료</th><th>추가미션</th><th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const form = $('form');
+      const tbody = $('tbody');
+      const sortBtn = $('sortBtn');
+      const siteList = $('siteList');
+      const typeSelect = $('typeSelect');
+
+      let store = { sites: [], types: [], classifications: ['방문','배송'], items: [] };
+      const baseTypes = ['방문형', '제공형', '페이백형', '페이백+구매평', '구매평', '배달형'];
+
+      const safeText = (v) => String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+      const number = (v) => Number(v || 0);
+      const nfmt = (v) => number(v).toLocaleString();
+
+      const toDate = (v) => v ? new Date(v + 'T00:00:00') : null;
+      const dday = (v) => {
+        const d = toDate(v);
+        if (!d) return null;
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        return Math.ceil((d - now) / (1000 * 60 * 60 * 24));
+      };
+      const ddayClass = (d) => d === null ? '' : d < 0 ? 'overdue' : d === 0 ? 'today' : 'upcoming';
+      const ddayText = (d) => d === null ? '-' : (d > 0 ? `D-${d}` : d === 0 ? 'D-Day' : `D+${Math.abs(d)}`);
+
+      const weekday = (v) => {
+        const d = toDate(v);
+        if (!d) return '-';
+        return ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][d.getDay()];
+      };
+
+      const typePill = (t) => {
+        if (t === '방문형') return '<span class="pill p-visit">방문</span>';
+        if (t === '배달형') return '<span class="pill p-delivery">배송</span>';
+        if (String(t).includes('페이백')) return '<span class="pill p-payback">페이백</span>';
+        return `<span class="pill p-normal">${safeText(t || '일반')}</span>`;
+      };
+
+      const statusPill = (v) => `<span class="pill ${v === 'O' ? 'p-o' : 'p-x'}">${safeText(v || 'X')}</span>`;
+      const sitePill = (v) => `<span class="pill p-site">${safeText(v || '-')}</span>`;
+
+      const buildSelectOptions = () => {
+        const types = [...new Set([...(store.types || []), ...baseTypes])];
+        typeSelect.innerHTML = types.map((t) => `<option>${safeText(t)}</option>`).join('');
+
+        const sites = [...new Set(store.sites || [])];
+        siteList.innerHTML = sites.map((s) => `<option value="${safeText(s)}"></option>`).join('');
+      };
+
+      const updateSummary = () => {
+        const items = store.items || [];
+        const visitItems = items.filter((i) => i.type === '방문형');
+        const deliveryItems = items.filter((i) => i.type === '배달형');
+        const paybackItems = items.filter((i) => String(i.type).includes('페이백'));
+        const todo = items.filter((i) => (i.review_done || 'X') !== 'O');
+
+        $('sumTotal').textContent = String(items.length);
+        $('sumDelivery').textContent = String(deliveryItems.length);
+        $('sumVisit').textContent = String(visitItems.length);
+        $('sumPayback').textContent = String(paybackItems.length);
+        $('sumTodo').textContent = String(todo.length);
+        $('sumDeliveryTodo').textContent = String(deliveryItems.filter((i) => (i.review_done || 'X') !== 'O').length);
+        $('sumVisitTodo').textContent = String(visitItems.filter((i) => (i.review_done || 'X') !== 'O').length);
+        $('sumPaybackTodo').textContent = String(paybackItems.filter((i) => (i.review_done || 'X') !== 'O').length);
+
+        const provided = items.reduce((acc, cur) => acc + number(cur.provided), 0);
+        const extra = items.reduce((acc, cur) => acc + number(cur.extra), 0);
+        const ratio = provided > 0 ? ((extra / provided) * 100).toFixed(1) : '0.0';
+        const usage = provided - extra;
+
+        $('sumProvided').textContent = nfmt(provided);
+        $('sumExtra').textContent = nfmt(extra);
+        $('sumExtraRatio').textContent = `${ratio}%`;
+        $('sumUsage').textContent = nfmt(usage);
+      };
+
+      const render = () => {
+        tbody.innerHTML = '';
+        (store.items || []).forEach((it, idx) => {
+          const visitDday = dday(it.visit_date);
+          const reviewDday = dday(it.review_deadline);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${sitePill(it.site)}</td>
+            <td>${safeText(it.campaign || '')}</td>
+            <td>${safeText(it.region || '-')}</td>
+            <td>${typePill(it.type || '')}</td>
+            <td>${statusPill(it.delivery_done || 'X')}</td>
+            <td>${safeText(it.delivery_date || '-')}</td>
+            <td>${safeText(it.visit_date || '-')}</td>
+            <td>${safeText(it.visit_time || '-')}</td>
+            <td><span class="dday ${ddayClass(visitDday)}">${ddayText(visitDday)}</span></td>
+            <td>${weekday(it.visit_date)}</td>
+            <td>${safeText(it.review_deadline || '-')}</td>
+            <td><span class="dday ${ddayClass(reviewDday)}">${ddayText(reviewDday)}</span></td>
+            <td>${statusPill(it.review_done || 'X')}</td>
+            <td>${nfmt(it.provided)}</td>
+            <td>${nfmt(it.extra)}</td>
+            <td>${nfmt(it.payback)}</td>
+            <td>${statusPill(it.payback_done || 'X')}</td>
+            <td>${safeText(it.mission || '해당없음')}</td>
+            <td class="actions"><button data-del="${idx}" type="button">삭제</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+        updateSummary();
+      };
+
+      const save = async () => {
+        await fetch('/api/data', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(store)
+        });
+      };
+
+      const normalizeItems = () => {
+        store.items = (store.items || []).map((it) => ({
+          site: it.site || '',
+          campaign: it.campaign || '',
+          region: it.region || '',
+          type: it.type || '방문형',
+          delivery_done: it.delivery_done || 'X',
+          delivery_date: it.delivery_date || '',
+          visit_date: it.visit_date || '',
+          visit_time: it.visit_time || '',
+          review_deadline: it.review_deadline || '',
+          review_done: it.review_done || 'X',
+          provided: number(it.provided),
+          extra: number(it.extra),
+          payback: number(it.payback),
+          payback_done: it.payback_done || 'X',
+          mission: it.mission || '해당없음'
+        }));
+      };
+
+      const load = async () => {
+        const res = await fetch('/api/data');
+        store = await res.json();
+        store.sites = Array.isArray(store.sites) ? store.sites : [];
+        store.types = Array.isArray(store.types) ? store.types : [...baseTypes];
+        store.items = Array.isArray(store.items) ? store.items : [];
+        normalizeItems();
+        buildSelectOptions();
+        render();
+      };
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const item = Object.fromEntries(fd.entries());
+        item.provided = number(item.provided);
+        item.extra = number(item.extra);
+        item.payback = number(item.payback);
+        item.mission = item.mission?.trim() || '해당없음';
+
+        if (item.site && !store.sites.includes(item.site)) {
+          store.sites.push(item.site);
+        }
+
+        store.items.push(item);
+        await save();
+
+        form.reset();
+        form.delivery_done.value = 'X';
+        form.review_done.value = 'X';
+        form.payback_done.value = 'X';
+        form.provided.value = '0';
+        form.extra.value = '0';
+        form.payback.value = '0';
+
+        buildSelectOptions();
+        render();
+      });
+
+      tbody.addEventListener('click', async (e) => {
+        const idx = e.target.getAttribute('data-del');
+        if (idx === null) return;
+        if (!confirm('삭제하시겠습니까?')) return;
+        store.items.splice(Number(idx), 1);
+        await save();
+        render();
+      });
+
+      sortBtn.addEventListener('click', () => {
+        store.items.sort((a, b) => (a.review_deadline || '9999-12-31').localeCompare(b.review_deadline || '9999-12-31'));
+        render();
+      });
+
+      load();
+    </script>
+  </body>
+</html>
